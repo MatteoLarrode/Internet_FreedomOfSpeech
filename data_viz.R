@@ -5,6 +5,12 @@ freedom_disc_men <- ggplot(non_democracies_df, aes(x=v2cldiscm, y=value_2021))+
 
 freedom_disc_men
 
+#----
+
+model1 <- lm(data = df,  v2cldiscw ~ value_2021_perc * v2x_libdem)
+summary(model1)
+
+# ---
 
 socialMed_offline <- ggplot(non_democracies_df, aes(x=value_2021, y=v2smorgavgact))+
   geom_point()+
@@ -12,12 +18,13 @@ socialMed_offline <- ggplot(non_democracies_df, aes(x=value_2021, y=v2smorgavgac
 
 socialMed_offline
 
+#----
+
 plot <- ggplot(democracies_df, aes(x=value_2021, y=v2x_libdem))+
   geom_point()+
   geom_smooth(method = "lm")
 
 plot
-
 
 
 

@@ -10,7 +10,3 @@ non_democracies_df <- df %>%
 
 democracies_df <- df %>%
   filter(v2x_libdem >= 0.6)
-
-
-
-
