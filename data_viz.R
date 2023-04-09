@@ -1,30 +1,63 @@
-#Visualizations ---------
+# Visualizations
 
-freedom_disc_men <- ggplot(non_democracies_df, aes(x=v2cldiscm, y=value_2021))+
-  geom_point()
+# Internet penetration & Freedom of discussion for women -------
 
-freedom_disc_men
+free_disc_women_plot <- ggplot(df_reduced, aes(x = value_2021_perc, y = v2cldiscw))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  
+  theme_wsj(title_family = "Roboto")+
+  theme(text=element_text(family="Roboto"),
+        plot.title=element_text(hjust=0.5, face="bold", size=12, margin = margin(b=10)),
+        plot.caption = element_text(size=9, vjust = -2),
+        axis.title = element_text(size = 12),
+        axis.title.x = element_text(vjust = -2),
+        axis.text.x = element_text(vjust = -.5),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank())+
+  scale_x_continuous(name ="Internet Penetration",labels = scales::percent_format(accuracy = 1))+
+  scale_y_continuous(name = "Freedom of Discussion for Women")+
+  labs(title = "Higher Access to the Internet is Correlated with More Freedom of Discussion for Women",
+       caption="Source: ITU, V-Dem | @matteoStats")
 
-#----
+free_disc_women_plot
+
+#CONTROL FOR DEMOCRACY = FACETED
+
+free_disc_women_plot2 <- ggplot(df_reduced, aes(x = value_2021_perc, y = v2cldiscw))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  
+  facet_wrap(~ is_dem_long, ncol=2) +
+  
+  theme_wsj(title_family = "Roboto")+
+  theme(text=element_text(family="Roboto"),
+        plot.title=element_text(hjust=0.5, face="bold", size=12, margin = margin(b=10)),
+        plot.caption = element_text(size=9, vjust = -2),
+        axis.title = element_text(size = 12),
+        axis.title.x = element_text(vjust = -2),
+        axis.text.x = element_text(vjust = -.5),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank())+
+  scale_x_continuous(name ="Internet Penetration",labels = scales::percent_format(accuracy = 1))+
+  scale_y_continuous(name = "Freedom of Discussion for Women")+
+  labs(title = "Relationship between Internet Penetration and Freedom of Discussion for Women \n at Different Levels of Liberal Democracy",
+       caption="Source: ITU, V-Dem | @matteoStats")
+
+free_disc_women_plot2
+
+
+# Other -------
 
 model1 <- lm(data = df,  v2cldiscw ~ value_2021_perc * v2x_libdem)
 summary(model1)
 
-# ---
 
 socialMed_offline <- ggplot(non_democracies_df, aes(x=value_2021, y=v2smorgavgact))+
   geom_point()+
   geom_smooth(method = "lm")
 
 socialMed_offline
-
-#----
-
-plot <- ggplot(democracies_df, aes(x=value_2021, y=v2x_libdem))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
-plot
 
 
 
