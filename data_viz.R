@@ -1,6 +1,3 @@
-
-
-
 #Visualizations ---------
 
 freedom_disc_men <- ggplot(non_democracies_df, aes(x=v2cldiscm, y=value_2021))+
@@ -20,8 +17,6 @@ plot <- ggplot(democracies_df, aes(x=value_2021, y=v2x_libdem))+
   geom_smooth(method = "lm")
 
 plot
-
-
 
 
 
