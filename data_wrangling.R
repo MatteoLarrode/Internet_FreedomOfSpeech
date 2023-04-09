@@ -5,8 +5,10 @@ library(tidyverse)
 
 df <- read_csv("data/final_data.csv")
 
-non_democracies_df <- df %>%
-  filter(v2x_libdem <= 0.6)
 
-democracies_df <- df %>%
-  filter(v2x_libdem >= 0.6)
+#Dataframe for freedom of discussion, Internet penetration & Level of democracy
+
+df_reduced1 <- df %>% 
+  select(Economy, value_2021_perc, v2x_libdem, v2cldiscm, v2cldiscw)%>%
+  #threshold of 0.5
+  mutate(is_dem = v2x_libdem >= 0.5)
