@@ -47,21 +47,9 @@ free_disc_women_plot2 <- ggplot(df_reduced, aes(x = value_2021_perc, y = v2cldis
 free_disc_women_plot2
 
 
-# Other -------
-
-model1 <- lm(data = df,  v2cldiscw ~ value_2021_perc * v2x_libdem)
-summary(model1)
 
 
-socialMed_offline <- ggplot(non_democracies_df, aes(x=value_2021, y=v2smorgavgact))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
-socialMed_offline
-
-
-
-#Access to internet ----------------
+# Access to internet ----------------
 
 #density plot 
 density_internet_21 <- ggplot(internet_users_2021, aes(x = value_2021_perc))+

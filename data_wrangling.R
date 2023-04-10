@@ -15,3 +15,4 @@ df_reduced <- df %>%
   select(Economy, value_2021_perc, v2x_libdem, v2cldiscm, v2cldiscw)%>%
   mutate(is_dem = v2x_libdem >= 0.5,
          is_dem_long = ifelse(is_dem, "Higher Liberal Dem. Index", "Lower Liberal Dem. Index"))
+
