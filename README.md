@@ -5,11 +5,10 @@ Matteo Larrode
 
 ## Intro
 
-I am passionate about both political science and technology, so I grew
-interested in the effect of the rise and diffusion of new technologies
-on international relations. One particular topic that fascinates me is
-the relationship between internet use, especially activity on social
-networks, and freedom of speech.
+A growing body of literature is interested in the effect of the rise and
+diffusion of new technologies on international relations. One particular
+topic we are interested in is the relationship between internet use,
+especially activity on social networks, and freedom of speech.
 
 Social media platforms have fundamentally transformed the landscape of
 social and political movements. They have allowed individuals to bypass
@@ -21,79 +20,13 @@ censored by governments, potentially putting activists at risk.
 
 ## Data Preparation
 
-I created a dataset called “final_data.csv” by joining data on Internet
+We created a dataset called “final_data.csv” by joining data on Internet
 penetration, provided by the [International Telecommunication Union
 (ITU)](https://www.itu.int/en/ITU-D/Statistics/Pages/stat/default.aspx)
 (percentage of the population who has access to the internet), and
 around 50 different metrics used by
 [V-Dem](https://www.v-dem.net/data/the-v-dem-dataset/) to measure levels
 of democracy. This data is available for a total of 157 countries.
-
-``` r
-library(tidyverse)
-```
-
-    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-    ## ✔ ggplot2 3.4.0     ✔ purrr   1.0.1
-    ## ✔ tibble  3.2.1     ✔ dplyr   1.1.0
-    ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
-    ## ✔ readr   2.1.4     ✔ forcats 0.5.2
-    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-    ## ✖ dplyr::filter() masks stats::filter()
-    ## ✖ dplyr::lag()    masks stats::lag()
-
-``` r
-library(ggplot2)
-library(ggthemes)
-library(scales)
-```
-
-    ## 
-    ## Attaching package: 'scales'
-    ## 
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     discard
-    ## 
-    ## The following object is masked from 'package:readr':
-    ## 
-    ##     col_factor
-
-``` r
-df <- read_csv("data/final_data.csv")
-```
-
-    ## Rows: 202 Columns: 52
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (2): Economy, country_text_id
-    ## dbl (50): value_2021, value_2021_perc, country_id, year, v2x_libdem, v2x_ega...
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
-df_noNA <- read_csv("data/final_data.csv")%>% 
-  drop_na()
-```
-
-    ## Rows: 202 Columns: 52
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr  (2): Economy, country_text_id
-    ## dbl (50): value_2021, value_2021_perc, country_id, year, v2x_libdem, v2x_ega...
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
-#dataframe for freedom of discussion, Internet penetration & Level of democracy
-
-df_reduced <- df %>% 
-  select(Economy, value_2021_perc, v2x_libdem, v2cldiscm, v2cldiscw)%>%
-  mutate(is_dem = v2x_libdem >= 0.5,
-         is_dem_long = ifelse(is_dem, "Higher Liberal Dem. Index", "Lower Liberal Dem. Index"))
-```
 
 ## Findings
 
@@ -131,10 +64,6 @@ free_disc_women_plot
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
-
-    ## Warning: Removed 43 rows containing non-finite values (`stat_smooth()`).
-
-    ## Warning: Removed 43 rows containing missing values (`geom_point()`).
 
 ![](README_files/figure-gfm/freedom_speech_women-1.png)<!-- -->
 
@@ -194,10 +123,6 @@ free_disc_women_plot2
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
-
-    ## Warning: Removed 43 rows containing non-finite values (`stat_smooth()`).
-
-    ## Warning: Removed 43 rows containing missing values (`geom_point()`).
 
 ![](README_files/figure-gfm/freedom_speech_women_faceted-1.png)<!-- -->
 

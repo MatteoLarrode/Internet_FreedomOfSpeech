@@ -11,13 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Intro
 
-I am passionate about both political science and technology, so I grew interested in the effect of the rise and diffusion of new technologies on international relations. One particular topic that fascinates me is the relationship between internet use, especially activity on social networks, and freedom of speech.
+A growing body of literature is interested in the effect of the rise and diffusion of new technologies on international relations. One particular topic we are interested in is the relationship between internet use, especially activity on social networks, and freedom of speech.
 
 Social media platforms have fundamentally transformed the landscape of social and political movements. They have allowed individuals to bypass traditional gatekeepers of information, such as the mainstream media, and connect with each other directly. This has enabled dissidents to spread information and organize more quickly and effectively than ever before. But on the other hand, they can also be easily monitored and censored by governments, potentially putting activists at risk.
 
 ## Data Preparation
 
-I created a dataset called “final_data.csv” by joining data on Internet penetration, provided by the [International Telecommunication Union (ITU)](https://www.itu.int/en/ITU-D/Statistics/Pages/stat/default.aspx) (percentage of the population who has access to the internet), and around 50 different metrics used by [V-Dem](https://www.v-dem.net/data/the-v-dem-dataset/) to measure levels of democracy. This data is available for a total of 157 countries.
+We created a dataset called “final_data.csv” by joining data on Internet penetration, provided by the [International Telecommunication Union (ITU)](https://www.itu.int/en/ITU-D/Statistics/Pages/stat/default.aspx) (percentage of the population who has access to the internet), and around 50 different metrics used by [V-Dem](https://www.v-dem.net/data/the-v-dem-dataset/) to measure levels of democracy. This data is available for a total of 157 countries.
 
 ```{r loading, include=FALSE}
 library(tidyverse)
@@ -32,7 +32,7 @@ df_noNA <- read_csv("data/final_data.csv")%>%
   drop_na()
 ```
 
-```{r wrangling, message=FALSE}
+```{r wrangling, message=FALSE, include=FALSE}
 #dataframe for freedom of discussion, Internet penetration & Level of democracy
 
 df_reduced <- df_noNA %>% 
