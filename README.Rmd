@@ -107,16 +107,21 @@ free_disc_women_plot2
 This faceted graph gives some very interesting information! It suggests that the effect of Internet penetration on freedom of discussion for women is **conditional on the level of libertarian democracy**. In countries considered to be more democratic, higher access to the Internet seems to be correlated to an increase in the freedom of discussion for women. This observation supports the hypothesis that the inter-connectivity and anonymity provided by the Internet empowers groups that tend to be discriminated against to express themselves. On the other hand, countries classified as having a lower liberal democracy index do not display any apparent relationship between Internet penetration and freedom of discussion for women. This could be explained by the censorship and online harassment efforts put in place by authoritarian regimes to limit the danger that free speech on the Internet poses to their stability.
 
 
+## Two opposing effects
+
+### Positive: the Internet & Social Media as a Promoter of Civil Liberties
+#### Platform for people to speak out + gendered approach 
+#### Platform to organize offline action
+
+### Negative: Risks for democracy + gendered approach
+#### i- surveillance + violence
+#### ii - personalisation
+#### iii - disinformation
 
 
-### Go deeper into why authocracies are flat
-##### censorship + surveillance
-##### violence
---> ACTORS OF CYBER VIOLENCE
-
-
-### Look into difference between men & women + minorities (?)
---> Whose voices are given a platform through the internet
+> COMPARE AUTOCRACIES TO DEMOCRACIES = uncover nature interaction regime x internet on freedom of speech
+  - Literature
+  - Dataviz & models
 
 
 ###Reminders
