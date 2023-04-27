@@ -31,11 +31,46 @@ For this research project, a dataset on internet penetration, V-Dem indicators, 
 library(tidyverse)
 library(ggplot2)
 library(ggthemes)
+library(ggrepel)
 library(scales)
 library(stargazer)
 
 
 df <- read_csv("data/final_data.csv")
+
+#final variable selection
+df_reduced <- df %>% 
+  select(Economy, #countries
+         most_recent_perc,  #internet access(%)
+         v2x_regime,  #regime classification (4)
+         v2x_freexp_altinf, #freedom of Expression and Alternative Sources of Information index
+         v2cldiscm, #freedom of discussion for men
+         v2cldiscw,  #freedom of discussion for women
+         v2mecenefi, #Internet censorship effort
+         v2smgovdom, #Government dissemination of false information domestic
+         v2smgovshutcap, #Government Internet shutdown capacity
+         v2smgovshut, #Government Internet shut down in practice 
+         v2smgovsmmon, #Government social media monitoring
+         v2smgovsmcenprc, #Government social media censorship in practice
+         v2smarrest, #Arrests for online political content (vs. gvt & policies)
+         v2smorgavgact, #Average people’s use of social media to organize offline action
+         v2smorgelitact, #Elites’ use of social media to organize offline action
+         #Types of organization through social media
+         v2smorgtypes_0, #Petition signing
+         v2smorgtypes_1, #Voter turnout 
+         v2smorgtypes_2, #Street protests
+         v2smorgtypes_3, #Strikes/labor actions
+         v2smorgtypes_6, #Vigilante Justice
+         v2smorgtypes_7, #Terrorism
+         v2smorgtypes_8)%>%#Ethnic cleansing/genocide
+  mutate(#recode sm. org. type --> merge categories
+         smorg_particip = round((v2smorgtypes_0 + v2smorgtypes_1 + v2smorgtypes_3)/3, 3), #citizen participation & strikes
+         smorg_violence =  round((v2smorgtypes_6 + v2smorgtypes_7 + v2smorgtypes_8)/3, 3), #violence
+         v2x_regime = as.factor(v2x_regime),
+         regime_type = as.factor(ifelse(grepl("autocracy", v2x_regime), "Autocracies", "Democracies")))%>% 
+  rename(smorg_st_protests = v2smorgtypes_2)%>%
+  select(-v2smorgtypes_0, -v2smorgtypes_1, -v2smorgtypes_3, -v2smorgtypes_6, -v2smorgtypes_7, -v2smorgtypes_8)
+
 ```
 
 #### Types of political systems
@@ -54,21 +89,25 @@ However, a weakness of using expert evaluations is that they are to some degree 
 Overall, the use of the RoW data is a valid and [widely accepted approach](https://ourworldindata.org/regimes-of-the-world-data) to measuring political regimes, and we believe it will be a useful tool for our analysis.
 
 
-```{r wrangling, message=FALSE, include=FALSE}
-#dataframe for freedom of discussion, Internet penetration & Level of democracy
-
-df_reduced <- df %>% 
-  select(Economy, most_recent_perc, v2x_regime, v2x_freexp_altinf)%>%
-  mutate(regime_type = ifelse(grepl("autocracy", v2x_regime), "Autocracies", "Democracies"))
-
-```
-
 ## Findings
 
 ### General Findings 
 
-For a first high-level overview, we used the "Freedom of Expression and Alternative Sources of Information index" of the VDem dataset. This variable quantifies the extent to which governments respect press and media freedom, the freedom of ordinary people to discuss political matters at home and in the public sphere, as well as the freedom of academic and cultural expression.
+**Exploratory data analysis**:
 
+```{r eda}
+
+library(tableone)
+
+tableOne <- CreateTableOne(vars = colnames(select(df_reduced, -Economy, -v2x_regime, -regime_type)), 
+                           strata = c("regime_type"), 
+                           data = df_reduced)
+
+tableOne
+
+```
+
+For a first high-level overview, we used the "Freedom of Expression and Alternative Sources of Information index" of the VDem dataset. This variable quantifies the extent to which governments respect press and media freedom, the freedom of ordinary people to discuss political matters at home and in the public sphere, as well as the freedom of academic and cultural expression.
 
 ```{r freedom_speech_internet, dpi= 200}
 freedom_speech_internet <- ggplot(df_reduced, aes(x = most_recent_perc, y = v2x_freexp_altinf))+
@@ -135,6 +174,51 @@ freedom_speech_internet_facet
 
 This faceted graph carries some very interesting information! It suggests that the effect of Internet penetration on freedom of discussion is **conditional on regime type**. In countries classified as democratic, higher access to the Internet seems to be correlated with an increase in freedom of discussion. On the other hand, countries classified as autocracies display an apparent negative relationship between Internet penetration and freedom of discussion.
 
+```{r regression1}
+model1 <- lm(data = df_reduced,  (v2x_freexp_altinf*100) ~ (most_recent_perc*100) * regime_type)
+
+summary(model1)
+
+
+```
+
+
+```{r cluster analysis}
+# Load required package
+library(cluster)
+
+df_cluster <- df_reduced%>%
+  select(-v2x_regime, -regime_type)
+
+# Select the columns to be used for clustering
+cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2cldiscm", "v2cldiscw", "v2mecenefi", "v2smgovdom", "v2smgovshutcap", "v2smgovshut", "v2smgovsmmon", "v2smgovsmcenprc", "v2smarrest", "v2smorgavgact", "v2smorgelitact", "smorg_st_protests", "smorg_particip", "smorg_violence")
+
+# Scale the data
+scaled_data <- scale(df_cluster[, cluster_cols])
+
+# Determine the optimal number of clusters (elbow method)
+wss <- sapply(1:10, function(k) {
+  kmeans(scaled_data, k, nstart = 10)$tot.withinss})
+
+plot(1:10, wss, type = "b", xlab = "Number of clusters", ylab = "Within groups sum of squares")
+
+# Run k-means clustering with the chosen number of clusters
+num_clusters <- 5
+kmeans_result <- kmeans(scaled_data, centers = num_clusters, nstart = 25)
+
+# Add the cluster assignments to the original dataframe
+df_cluster$cluster <- kmeans_result$cluster
+
+```
+
+```{r}
+cluster_plot <- ggplot(df_cluster, aes(x = most_recent_perc, y = v2x_freexp_altinf, color = factor(cluster))) + 
+  geom_point() +
+  labs(x = "Internet Access", y = "Freedom of Speech", color = "Cluster") #+
+  #geom_text(aes(label = Economy), hjust = 0, vjust = 0)
+
+cluster_plot
+```
 The purpose of this report is to delve into the complex interplay between Internet penetration, freedom of speech, and regime type. By analyzing the data and conducting case studies, this report aims to investigate the specific mechanisms that drive these observed patterns. By doing so, it aims to provide insights into the nuances of the relationship between the Internet and freedom of speech in different political contexts.
 
 ### Online activity 
@@ -142,6 +226,14 @@ The purpose of this report is to delve into the complex interplay between Intern
 #### Democracies: 
 ##### A Platform to Share Opinions and Speak Out in Safety...
 In democracies, social media has provided a platform for individuals to share their opinions and engage in political discussions, allowing for greater freedom of expression and a more direct connection with their representatives. The inter-connectivity and anonymity provided by the Internet can also empower groups that tend to be discriminated against to express themselves.
+
+
+VARIABLES
+  
+  Freedom of Expression and Alternative Sources of Information index (D) - (v2x_freexp_altinf)
+  Freedom of discussion for men (C) (v2cldiscm)
+  Freedom of discussion for women (C) (v2cldiscw)
+
 
 
 ##### ...But that also bears discrimination and breeds polarization
@@ -164,6 +256,47 @@ Social media has been a powerful tool for social change in democracies, allowing
 However, certain discourses on social media can also be harmful and perpetuate hate speech and discriminatory attitudes.
 
 #### Autocracies:
+
+```{r cluster_autocracies}
+
+df_cluster_autocracies <- df_reduced%>%
+  filter(regime_type == "Autocracies")%>%
+  select(-v2x_regime, -regime_type)
+
+
+# Scale the data
+scaled_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+
+# Run k-means clustering with the chosen number of clusters
+num_clusters <- 3
+kmeans_result_autocracies <- kmeans(scaled_data_autocracies, centers = num_clusters, nstart = 25)
+
+# Add the cluster assignments to the original dataframe
+df_cluster_autocracies$cluster <- kmeans_result_autocracies$cluster
+
+```
+
+```{r}
+# Perform PCA
+pca <- prcomp(scaled_data_autocracies, center = TRUE, scale. = TRUE)
+# Extract the loadings
+loadings <- pca$rotation[, 1:2]
+# Compute the scores
+scores <- as.data.frame(pca$x[, 1:2])
+# Add the Economy and cluster information
+scores <- cbind(Economy = df_cluster_autocracies$Economy, 
+                scores, 
+                cluster = df_cluster_autocracies$cluster)
+
+
+cluster_plot_autocracies <- ggplot(scores, aes(x = PC1, y = PC2, color = factor(cluster))) + 
+  geom_point() +
+  labs(x = "PC1", y = "PC2", color = "Cluster") +
+  geom_text(aes(label = Economy), hjust = 0, vjust = 0)
+
+cluster_plot_autocracies
+```
+
 ##### Digital repression: surveillance, harassment, and targeted violence
 In autocracies, the internet is increasingly being used as a tool of repression. Governments are using digital means such as surveillance, social media monitoring, and targeted violence to silence dissent and suppress political opposition. Activists and human rights defenders face heightened risks both on- and offline, as governments increasingly use technology to monitor and track their activities. Harassment and cyber attacks against individuals and groups critical of the government are also on the rise. In some cases, governments are using the internet to specifically target vulnerable populations, such as ethnic and religious minorities, and subject them to online abuse and persecution. The impact of digital repression on individuals and society as a whole is significant, as it undermines freedom of expression and other basic human rights, and contributes to a culture of fear and self-censorship.
 
