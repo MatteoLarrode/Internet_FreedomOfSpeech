@@ -98,16 +98,55 @@ Overall, the use of the RoW data is a valid and [widely accepted approach](https
 ```{r eda}
 
 library(tableone)
+library(kableExtra)
 
-tableOne <- CreateTableOne(vars = colnames(select(df_reduced, -Economy, -v2x_regime, -regime_type)), 
-                           strata = c("regime_type"), 
-                           data = df_reduced)
+df_renamed <- df_reduced %>%
+  rename(
+    `Countries` = Economy,
+    `Internet access` = most_recent_perc,
+    `Regime classification` = v2x_regime,
+    `Freedom of Expression and Alternative Sources of Information` = v2x_freexp_altinf,
+    `Freedom of discussion for men` = v2cldiscm,
+    `Freedom of discussion for women` = v2cldiscw,
+    `Internet censorship effort` = v2mecenefi,
+    `Government dissemination of false information` = v2smgovdom,
+    `Government Internet shutdown capacity` = v2smgovshutcap,
+    `Government Internet shut down in practice` = v2smgovshut,
+    `Government social media monitoring` = v2smgovsmmon,
+    `Government social media censorship in practice` = v2smgovsmcenprc,
+    `Arrests for online political content` = v2smarrest,
+    `Average people's use of social media to organize offline action` = v2smorgavgact,
+    `Elites' use of social media to organize offline action` = v2smorgelitact,
+    `Organization through social media for citizen participation & strikes` = smorg_particip,
+    `Organization through social media for violence` = smorg_violence,
+    `Organization through social media for street protests` = smorg_st_protests,
+    `Regime type` = regime_type)
+  
 
-tableOne
+tableOne <- CreateTableOne(vars = colnames(select(df_renamed, 
+                                                  -Countries, -`Regime classification`, -`Regime type`)), 
+                           strata = c("Regime type"), 
+                           data = df_renamed,
+                           test = FALSE)
 
+## Then we use the print function to prepare it for export.
+table_p <- print(tableOne, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+
+## Save to a CSV file
+write.csv(table_p, file = "myTable.csv")
+
+table_df <- read_csv("myTable.csv")
+colnames(table_df)[1]  <- "Variables" 
+
+
+table_df %>%
+  kbl(caption = "Table 1. Exploratory data analysis, stratified by regime type") %>%
+  kable_classic(full_width = F, html_font = "Times New Roman")%>%
+  save_kable(file = "table1.html", self_contained = T)
 ```
 
 For a first high-level overview, we used the "Freedom of Expression and Alternative Sources of Information index" of the VDem dataset. This variable quantifies the extent to which governments respect press and media freedom, the freedom of ordinary people to discuss political matters at home and in the public sphere, as well as the freedom of academic and cultural expression.
+
 
 ```{r freedom_speech_internet, dpi= 200}
 freedom_speech_internet <- ggplot(df_reduced, aes(x = most_recent_perc, y = v2x_freexp_altinf))+
