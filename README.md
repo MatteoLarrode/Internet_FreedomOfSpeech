@@ -88,96 +88,94 @@ our analysis.
 
 ## Findings
 
-### Effect of Internet on Freedom of Speech for Women
+### General Findings
 
-Here is a scatterplot that illustrates the relationship between freedom
-of discussion for women, my outcome variable, and access to the
-Internet, my main independent variable.
+For a first high-level overview, we used the “Freedom of Expression and
+Alternative Sources of Information index” of the VDem dataset. This
+variable quantifies the extent to which governments respect press and
+media freedom, the freedom of ordinary people to discuss political
+matters at home and in the public sphere, as well as the freedom of
+academic and cultural expression.
 
 ``` r
-free_disc_women_plot <- ggplot(df_reduced, aes(x = most_recent_perc, y = v2cldiscw))+
+freedom_speech_internet <- ggplot(df_reduced, aes(x = most_recent_perc, y = v2x_freexp_altinf))+
   geom_point()+
   geom_smooth(method = "lm")+
   
-  theme_wsj(title_family = "Roboto")+
-  theme(text=element_text(family="Roboto"),
-        plot.title=element_text(hjust=0.5, face="bold", size=12, margin = margin(b=10)),
-        plot.caption = element_text(size=9, vjust = -2),
-        axis.title = element_text(size = 12),
-        axis.title.x = element_text(vjust = -2),
-        axis.text.x = element_text(vjust = -.5),
+  theme(aspect.ratio = 3.2/7,
+        text=element_text(family="Roboto Condensed"),
+        plot.margin = margin(t = 0, r = 0.5, b = 0, l = 0.5, unit = "cm"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#dcdbd8"),
+        panel.grid.minor.y = element_blank(),
+        plot.title = element_text(size = rel(1.2), hjust = 0, face = "bold"),
+        plot.caption = element_text(hjust = 0, size = 9, colour = "#4B4B4B"),
+        axis.text = element_text(size = rel(1), color = "gray8"),
         axis.text.y = element_blank(),
-        axis.ticks.x = element_blank())+
+        axis.line.x  = element_line(color = "gray8"),
+        axis.ticks.y = element_blank())+
   scale_x_continuous(name ="Internet Penetration",labels = scales::percent_format(accuracy = 1))+
-  scale_y_continuous(name = "Freedom of Discussion for Women")+
-  labs(title = "Higher Access to the Internet is Correlated with More Freedom of Discussion for Women",
-       caption="Source: ITU, V-Dem | @matteoStats")
+  scale_y_continuous(name = "Freedom of Expression")+
+  labs(title = "Higher Access to the Internet is Correlated with More Freedom of Discussion",
+       caption="Source: ITU, V-Dem")
 
-free_disc_women_plot
+freedom_speech_internet
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](README_files/figure-gfm/freedom_speech_women-1.png)<!-- -->
+![](README_files/figure-gfm/freedom_speech_internet-1.png)<!-- -->
 
 From this simple scatterplot, and the linear regression fitted to the
 data, it seems that countries with higher levels of Internet penetration
-are associated with higher levels of freedom of discussion for women.
-However, an important omitted variable bias could emerge if we do not
-take governance into account. Indeed, democracies, usually characterized
-by high levels of freedom of discussion, are also often more developed
-than authoritarian regimes, and therefore have higher Internet
-penetration rates on average.
+are associated with higher levels of freedom of discussion.
 
-An interesting extra step to analyze the relationship between Internet
-penetration and freedom of discussion could be to control for the level
-of democracy. To reach this objective, we will use V-Dem’s Liberal
-democracy index (v2x_libdem), that measures to what extent is the ideal
-of liberal democracy achieved. To clarify, the liberal principle of
-democracy emphasizes the importance of protecting individual and
-minority rights against the tyranny of the state and the tyranny of the
-majority. This is achieved by constitutionally protected civil
-liberties, strong rule of law, an independent judiciary, and effective
-checks and balances that, together, limit the exercise of executive
-power.
+However, an important omitted variable bias could emerge when ignoring
+regime type. Indeed, democracies, usually characterized by high levels
+of freedom of discussion, are also often more developed than
+authoritarian regimes, and therefore have higher Internet penetration
+rates on average.
 
-To explore this addition of an independent variable to the model, we can
-create the same scatterplot as before, but faceted by different levels
-of the liberal democracy index. There is no specific threshold level at
-which a country is considered a democracy on the V-Dem index. Rather,
-the index measures the extent to which a country meets the various
-criteria for democracy and assigns a score accordingly. The higher the
-score, the more democratic the country is considered to be. However, for
-the purpose of this graph, I arbitrarily decided of a threshold (0.5) to
-separate countries into two categories of liberal democracy.
+The next step taken to analyze the relationship between Internet
+penetration and freedom of discussion is to take regime type into
+account. To reach this objective, we will use V-Dem’s Regimes of the
+World (RoW) classification mentioned above.
 
 ``` r
-free_disc_women_plot2 <- ggplot(df_reduced, aes(x = most_recent_perc, y = v2cldiscw))+
+freedom_speech_internet_facet <- ggplot(df_reduced, aes(x = most_recent_perc, y = v2x_freexp_altinf))+
   geom_point()+
+  facet_wrap(~ regime_type)+
   geom_smooth(method = "lm")+
   
-  facet_wrap(~ regime_type, ncol=2) +
-  
-  theme_wsj(title_family = "Roboto")+
-  theme(text=element_text(family="Roboto"),
-        plot.title=element_text(hjust=0.5, face="bold", size=12, margin = margin(b=10)),
-        plot.caption = element_text(size=9, vjust = -2),
-        axis.title = element_text(size = 12),
-        axis.title.x = element_text(vjust = -2),
-        axis.text.x = element_text(vjust = -.5),
+  theme(aspect.ratio = 4/7,
+        text=element_text(family="Roboto Condensed"),
+        plot.margin = margin(t = 0, r = 0.5, b = 0, l = 0.5, unit = "cm"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#dcdbd8"),
+        panel.grid.minor.y = element_blank(),
+        plot.title = element_text(size = rel(1.2), hjust = 0, face = "bold"),
+        plot.caption = element_text(hjust = 0, size = 9, colour = "#4B4B4B"),
+        axis.text = element_text(size = rel(1), color = "gray8"),
         axis.text.y = element_blank(),
-        axis.ticks.x = element_blank())+
+        axis.line.x  = element_line(color = "gray8"),
+        axis.ticks.y = element_blank())+
   scale_x_continuous(name ="Internet Penetration",labels = scales::percent_format(accuracy = 1))+
-  scale_y_continuous(name = "Freedom of Discussion for Women")+
-  labs(title = "Relationship between Internet Penetration and Freedom of Discussion for Women \n at Different Levels of Liberal Democracy",
-       caption="Source: ITU, V-Dem | @matteoStats")
+  scale_y_continuous(name = "Freedom of Expression")+
+  labs(title = "Relationship between Internet Penetration and Freedom of Discussion \n depending on the regime type",
+       caption="Source: ITU, V-Dem")
 
-free_disc_women_plot2
+freedom_speech_internet_facet
 ```
 
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](README_files/figure-gfm/freedom_speech_women_faceted-1.png)<!-- -->
+![](README_files/figure-gfm/freedom_speech_internet_facet-1.png)<!-- -->
 
 This faceted graph gives some very interesting information! It suggests
 that the effect of Internet penetration on freedom of discussion for
