@@ -133,30 +133,39 @@ freedom_speech_internet_facet <- ggplot(df_reduced, aes(x = most_recent_perc, y 
 freedom_speech_internet_facet
 ```
 
-This faceted graph gives some very interesting information! It suggests that the effect of Internet penetration on freedom of discussion for women is **conditional on the level of libertarian democracy**. In countries considered to be more democratic, higher access to the Internet seems to be correlated to an increase in the freedom of discussion for women. This observation supports the hypothesis that the inter-connectivity and anonymity provided by the Internet empowers groups that tend to be discriminated against to express themselves. On the other hand, countries classified as having a lower liberal democracy index do not display any apparent relationship between Internet penetration and freedom of discussion for women. This could be explained by the censorship and online harassment efforts put in place by authoritarian regimes to limit the danger that free speech on the Internet poses to their stability.
+This faceted graph carries some very interesting information! It suggests that the effect of Internet penetration on freedom of discussion is **conditional on regime type**. In countries classified as democratic, higher access to the Internet seems to be correlated with an increase in freedom of discussion. On the other hand, countries classified as autocracies display an apparent negative relationship between Internet penetration and freedom of discussion.
+
+The purpose of this report is to delve into the complex interplay between Internet penetration, freedom of speech, and regime type. By analyzing the data and conducting case studies, this report aims to investigate the specific mechanisms that drive these observed patterns. By doing so, it aims to provide insights into the nuances of the relationship between the Internet and freedom of speech in different political contexts.
+
+### Online activity 
+
+#### Democracies: 
+##### A Platform to Share Opinions and Speak Out in Safety...
+In democracies, social media has provided a platform for individuals to share their opinions and engage in political discussions, allowing for greater freedom of expression and a more direct connection with their representatives. The inter-connectivity and anonymity provided by the Internet can also empower groups that tend to be discriminated against to express themselves.
 
 
-## Two opposing effects
+##### ...But that also bears discrimination and breeds polarization
+At the same time, social media has also been associated with discrimination and polarization, with algorithms and echo chambers leading to the amplification of extreme viewpoints and the spread of misinformation.
 
-### Positive: the Internet & Social Media as a Promoter of Civil Liberties
-#### Platform for people to speak out + gendered approach 
-#### Platform to organize offline action
+#### Autocracies: 
 
-### Negative: Risks for democracy + gendered approach
-#### i- surveillance + violence
-#### ii - personalisation
-#### iii - disinformation
+##### Censorship and Disinformation
+
+At both a domestic and international level, authoritarian governments are attempting to break up the open internet and create a network of oppressive enclaves. This is resulting in an increasing number of governments controlling what individuals can access and share online, by blocking foreign websites, holding onto personal data, and centralizing their technical infrastructure. Consequently, internet freedom globally has decreased for the [12th year in a row](https://freedomhouse.org/report/freedom-net/2022/countering-authoritarian-overhaul-internet). Digital repression in many countries has increased, coinciding with wider crackdowns on human rights. Russia, Myanmar, Libya, and Sudan experienced the most significant declines in internet freedom. Governments are blocking political, social, or religious content, often targeting information sources based outside their borders, leading to record-high online censorship. In these cases, the internet becomes a tool for disinformation and propaganda, with governments using it to manipulate public opinion and suppress dissent.
 
 
-> COMPARE AUTOCRACIES TO DEMOCRACIES = uncover nature interaction regime x internet on freedom of speech
-  - Literature
-  - Dataviz & models
+### Offline activity 
 
+#### Democracies:
+##### A Platform for Social Change
+Social media has been a powerful tool for social change in democracies, allowing activists to raise awareness of important issues and mobilize support for their causes.
 
-###Reminders
-#### Quality of data
---> violence on women not reported ...
+##### The dangers of certain discourses
+However, certain discourses on social media can also be harmful and perpetuate hate speech and discriminatory attitudes.
 
+#### Autocracies:
+##### Digital repression: surveillance, harassment, and targeted violence
+In autocracies, the internet is increasingly being used as a tool of repression. Governments are using digital means such as surveillance, social media monitoring, and targeted violence to silence dissent and suppress political opposition. Activists and human rights defenders face heightened risks both on- and offline, as governments increasingly use technology to monitor and track their activities. Harassment and cyber attacks against individuals and groups critical of the government are also on the rise. In some cases, governments are using the internet to specifically target vulnerable populations, such as ethnic and religious minorities, and subject them to online abuse and persecution. The impact of digital repression on individuals and society as a whole is significant, as it undermines freedom of expression and other basic human rights, and contributes to a culture of fear and self-censorship.
 
-
-
+##### The Internet for social change
+In autocratic regimes, and despite the dangers such actions bears, the internet has also been a platform for social change. Citizens in authoritarian states often use it to document and expose human rights abuses, corruption, and government repression. Social media has allowed activists and ordinary citizens to share videos, photos, and other evidence of abuses, bypassing traditional state-controlled media outlets. This has helped to bring international attention to human rights issues and put pressure on authoritarian governments to change their behavior.
