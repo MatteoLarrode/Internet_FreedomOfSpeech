@@ -46,13 +46,15 @@ df_reduced <- df %>%
          v2x_freexp_altinf, #freedom of Expression and Alternative Sources of Information index
          v2cldiscm, #freedom of discussion for men
          v2cldiscw,  #freedom of discussion for women
-         v2mecenefi, #Internet censorship effort
-         v2smgovdom, #Government dissemination of false information domestic
+         v2mecenefi, #Internet censorship effort (higher = less censorship)
+         v2smgovdom, #Government dissemination of false information domestic (higher = less dissemination)
+         v2smgovfilcap, #Government Internet filtering capacity
+         v2smgovfilprc, #Government Internet filtering in practice (high = less often)
          v2smgovshutcap, #Government Internet shutdown capacity
-         v2smgovshut, #Government Internet shut down in practice 
-         v2smgovsmmon, #Government social media monitoring
-         v2smgovsmcenprc, #Government social media censorship in practice
-         v2smarrest, #Arrests for online political content (vs. gvt & policies)
+         v2smgovshut, #Government Internet shut down in practice (high = less often)
+         v2smgovsmmon, #Government social media monitoring  (high = less monitoring)
+         v2smgovsmcenprc, #Government social media censorship in practice  (high = less censorship)
+         v2smarrest, #Arrests for online political content (high = less likely)
          v2smorgavgact, #Average people’s use of social media to organize offline action
          v2smorgelitact, #Elites’ use of social media to organize offline action
          #Types of organization through social media
@@ -113,6 +115,8 @@ df_renamed <- df_transformed %>%
     `Freedom of discussion for women` = v2cldiscw,
     `Internet censorship effort` = v2mecenefi,
     `Government dissemination of false information` = v2smgovdom,
+    `Government Internet filtering capacity` = v2smgovfilcap,
+    `Government Internet filtering in practice` = v2smgovfilprc,
     `Government Internet shutdown capacity` = v2smgovshutcap,
     `Government Internet shut down in practice` = v2smgovshut,
     `Government social media monitoring` = v2smgovsmmon,
@@ -350,21 +354,62 @@ However, certain discourses on social media can also be harmful and perpetuate h
 
 #### Autocracies:
 
+Unlike democracies, autocracies vastly differ in their access to the Internet, monitoring or disinformation capacity, and strategies. It could be interesting to run a cluster analysis on them, which could enable us to group them depending on their characteristics.  
 
+First, let's create our dataframe, and normalize the data. 
 
 ```{r cluster_autocracies}
 
-df_cluster_autocracies <- df_reduced%>%
+df_cluster_autocracies <- df_transformed%>%
   filter(regime_type == "Autocracies")%>%
   select(-v2x_regime, -regime_type)
 
+# Select the columns to be used for clustering
+cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2mecenefi", "v2smgovdom", "v2smgovfilcap", "v2smgovfilprc", "v2smgovshutcap", "v2smgovshut", "v2smgovsmmon", "v2smgovsmcenprc", "v2smarrest")
 
 # Scale the data
-scaled_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+normalized_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+```
 
+We can now create a covariance matrix, and use a heatmap to visualize correlation between the variables. 
+```{r}
+library(ggcorrplot)
+
+corr_matrix <- cor(normalized_data_autocracies)
+ggcorrplot(corr_matrix)
+```
+
+We can now conduct our principle components analysis. In PCA, a new set of dimensions or latent variables are constructed based on a (linear) combination of the original features; this is a process called **feature extraction**. 
+
+```{r}
+library("FactoMineR")
+
+data.pca <- princomp(corr_matrix)
+summary(data.pca)
+
+```
+Each component explains a percentage of the total variance in the data set. In the Cumulative Proportion section, the first principal component explains almost 90% of the total variance. This implies that 9 tenths of the data in the set of 11 variables can be represented by just the first principal component. The second one explains 5% of the total variance. 
+
+The cumulative proportion of Comp.1 and Comp.2 explains more than 95% of the total variance. This means that the first two principal components can accurately represent the data. 
+
+We can now analyze the loadings, which describe the importance of the independent variables. The loadings provide information about which variables give the largest contribution to the components.
+
+- Loadings range from -1 to 1.
+- A high absolute value describes that the variable strongly influences the component. Values close to 0 indicate that the variable has a weak influence on the component.
+- The sign of a loading indicates whether a variable and a principal component are positively or negatively correlated.
+
+
+```{r}
+data.pca$loadings[, 1:2]
+```
+
+
+
+
+```{r}
 # Run k-means clustering with the chosen number of clusters
 num_clusters <- 3
-kmeans_result_autocracies <- kmeans(scaled_data_autocracies, centers = num_clusters, nstart = 25)
+kmeans_result_autocracies <- kmeans(normalized_data_autocracies, centers = num_clusters, nstart = 25)
 
 # Add the cluster assignments to the original dataframe
 df_cluster_autocracies$cluster <- kmeans_result_autocracies$cluster
@@ -373,7 +418,7 @@ df_cluster_autocracies$cluster <- kmeans_result_autocracies$cluster
 
 ```{r}
 # Perform PCA
-pca <- prcomp(scaled_data_autocracies, center = TRUE, scale. = TRUE)
+pca <- prcomp(normalized_data_autocracies, center = TRUE, scale. = TRUE)
 # Extract the loadings
 loadings <- pca$rotation[, 1:2]
 # Compute the scores
@@ -391,6 +436,9 @@ cluster_plot_autocracies <- ggplot(scores, aes(x = PC1, y = PC2, color = factor(
 
 cluster_plot_autocracies
 ```
+
+Let us visualize the different in Internet shutdown capacity, and in practice. 
+
 
 ```{r}
 
@@ -412,7 +460,66 @@ In autocracies, the internet is increasingly being used as a tool of repression.
 In autocratic regimes, and despite the dangers such actions bears, the internet has also been a platform for social change. Citizens in authoritarian states often use it to document and expose human rights abuses, corruption, and government repression. Social media has allowed activists and ordinary citizens to share videos, photos, and other evidence of abuses, bypassing traditional state-controlled media outlets. This has helped to bring international attention to human rights issues and put pressure on authoritarian governments to change their behavior.
 
 
+```{r offline activity, dpi=200}
+df_offline_activity <-  df %>% 
+  select(v2x_regime,  #regime classification (4)
+         v2smorgavgact, #Average people’s use of social media to organize offline action
+         v2smorgelitact, #Elites’ use of social media to organize offline action
+         #Types of organization through social media
+         v2smorgtypes_0, #Petition signing
+         v2smorgtypes_1, #Voter turnout 
+         v2smorgtypes_2, #Street protests
+         v2smorgtypes_3, #Strikes/labor actions
+         v2smorgtypes_4, #Riots
+         v2smorgtypes_5, #Organised rebellion
+         v2smorgtypes_6) %>%#Vigilante Justice
+  mutate(#recode sm. org. type --> merge categories
+         smorg_particip = round((v2smorgtypes_0 + v2smorgtypes_1 + v2smorgtypes_3)/3, 3), #citizen participation & strikes
+         v2x_regime = as.factor(v2x_regime))%>%
+  select(-v2smorgtypes_0, -v2smorgtypes_1, -v2smorgtypes_3) %>% 
+  mutate_if(is.numeric, ~ . * 100) %>% 
+  group_by(v2x_regime) %>%
+  summarise(avg_ppl_use = mean(v2smorgavgact),
+            elites_use = mean(v2smorgelitact), 
+            citizen_particip = mean(smorg_particip),
+            st_protests = mean(v2smorgtypes_2),
+            riots = mean(v2smorgtypes_4), 
+            org_rebellion = mean(v2smorgtypes_5),
+            vigi_justice = mean(v2smorgtypes_6))
 
+df_offline_long <- gather(df_offline_activity, key = "variable", value = "value", -v2x_regime, -avg_ppl_use, -elites_use)
+```
+
+
+```{r, dpi = 200}
+
+offline_activity <- ggplot(df_offline_long, aes(x = v2x_regime, y = value, fill = variable)) +
+  geom_col(position = "fill", color = "white") +
+  labs(x = "Regime Type", y = "Value", fill = "Variable") +
+  scale_fill_manual(values = c("citizen_particip" = "#0072B2", "st_protests" = "#009E73",
+                               "riots" = "#D55E00", "org_rebellion" = "#CC79A7",
+                               "vigi_justice" = "#56B4E9")) +
+  theme(text=element_text(family="Roboto Condensed"),
+        plot.margin = margin(t = 0, r = 0.5, b = 0, l = 0.5, unit = "cm"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#dcdbd8"),
+        panel.grid.minor.y = element_blank(),
+        plot.title = element_text(size = rel(1.3), hjust = 0, face = "bold"),
+        plot.caption = element_text(hjust = 0, size = 9, colour = "#4B4B4B"),
+        axis.text = element_text(size = rel(1), color = "gray8"),
+        axis.title= element_blank(),
+        axis.line.x  = element_line(color = "gray8"),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())+
+  labs(title = "Nature of organisation through social media, across regime types",
+       caption="Source: ITU, V-Dem")
+
+
+offline_activity
+```
 
 
 
