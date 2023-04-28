@@ -90,6 +90,13 @@ our analysis.
 
 ### General Findings
 
+**Exploratory data analysis**:
+
+<figure>
+<img src="README_files/figure-gfm/table1.png" alt="Table1" />
+<figcaption aria-hidden="true">Table1</figcaption>
+</figure>
+
 For a first high-level overview, we used the “Freedom of Expression and
 Alternative Sources of Information index” of the VDem dataset. This
 variable quantifies the extent to which governments respect press and
@@ -185,13 +192,86 @@ increase in freedom of discussion. On the other hand, countries
 classified as autocracies display an apparent negative relationship
 between Internet penetration and freedom of discussion.
 
-The purpose of this report is to delve into the complex interplay
-between Internet penetration, freedom of speech, and regime type. By
-analyzing the data and conducting case studies, this report aims to
-investigate the specific mechanisms that drive these observed patterns.
-By doing so, it aims to provide insights into the nuances of the
-relationship between the Internet and freedom of speech in different
-political contexts.
+``` r
+model1 <- lm(data = df_reduced,  (v2x_freexp_altinf*100) ~ most_recent_perc * regime_type)
+
+summary(model1)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = (v2x_freexp_altinf * 100) ~ most_recent_perc * regime_type, 
+    ##     data = df_reduced)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -47.380  -8.436   2.139   8.835  38.923 
+    ## 
+    ## Coefficients:
+    ##                                         Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                               58.471      4.413  13.249  < 2e-16
+    ## most_recent_perc                         -27.235      7.005  -3.888 0.000147
+    ## regime_typeDemocracies                    11.580      8.519   1.359 0.175922
+    ## most_recent_perc:regime_typeDemocracies   47.465     11.603   4.091 6.76e-05
+    ##                                            
+    ## (Intercept)                             ***
+    ## most_recent_perc                        ***
+    ## regime_typeDemocracies                     
+    ## most_recent_perc:regime_typeDemocracies ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 17.17 on 162 degrees of freedom
+    ## Multiple R-squared:  0.6257, Adjusted R-squared:  0.6188 
+    ## F-statistic: 90.28 on 3 and 162 DF,  p-value: < 2.2e-16
+
+``` r
+# Load required package
+library(cluster)
+
+df_cluster <- df_reduced%>%
+  select(-v2x_regime, -regime_type)
+
+# Select the columns to be used for clustering
+cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2cldiscm", "v2cldiscw", "v2mecenefi", "v2smgovdom", "v2smgovshutcap", "v2smgovshut", "v2smgovsmmon", "v2smgovsmcenprc", "v2smarrest", "v2smorgavgact", "v2smorgelitact", "smorg_st_protests", "smorg_particip", "smorg_violence")
+
+# Scale the data
+scaled_data <- scale(df_cluster[, cluster_cols])
+
+# Determine the optimal number of clusters (elbow method)
+wss <- sapply(1:10, function(k) {
+  kmeans(scaled_data, k, nstart = 10)$tot.withinss})
+
+plot(1:10, wss, type = "b", xlab = "Number of clusters", ylab = "Within groups sum of squares")
+```
+
+![](README_files/figure-gfm/cluster%20analysis-1.png)<!-- -->
+
+``` r
+# Run k-means clustering with the chosen number of clusters
+num_clusters <- 5
+kmeans_result <- kmeans(scaled_data, centers = num_clusters, nstart = 25)
+
+# Add the cluster assignments to the original dataframe
+df_cluster$cluster <- kmeans_result$cluster
+```
+
+``` r
+cluster_plot <- ggplot(df_cluster, aes(x = most_recent_perc, y = v2x_freexp_altinf, color = factor(cluster))) + 
+  geom_point() +
+  labs(x = "Internet Access", y = "Freedom of Speech", color = "Cluster") #+
+  #geom_text(aes(label = Economy), hjust = 0, vjust = 0)
+
+cluster_plot
+```
+
+![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- --> The purpose
+of this report is to delve into the complex interplay between Internet
+penetration, freedom of speech, and regime type. By analyzing the data
+and conducting case studies, this report aims to investigate the
+specific mechanisms that drive these observed patterns. By doing so, it
+aims to provide insights into the nuances of the relationship between
+the Internet and freedom of speech in different political contexts.
 
 ### Online activity
 
@@ -205,6 +285,12 @@ greater freedom of expression and a more direct connection with their
 representatives. The inter-connectivity and anonymity provided by the
 Internet can also empower groups that tend to be discriminated against
 to express themselves.
+
+VARIABLES
+
+Freedom of Expression and Alternative Sources of Information index (D) -
+(v2x_freexp_altinf) Freedom of discussion for men (C) (v2cldiscm)
+Freedom of discussion for women (C) (v2cldiscw)
 
 ##### …But that also bears discrimination and breeds polarization
 
@@ -250,6 +336,46 @@ However, certain discourses on social media can also be harmful and
 perpetuate hate speech and discriminatory attitudes.
 
 #### Autocracies:
+
+``` r
+df_cluster_autocracies <- df_reduced%>%
+  filter(regime_type == "Autocracies")%>%
+  select(-v2x_regime, -regime_type)
+
+
+# Scale the data
+scaled_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+
+# Run k-means clustering with the chosen number of clusters
+num_clusters <- 3
+kmeans_result_autocracies <- kmeans(scaled_data_autocracies, centers = num_clusters, nstart = 25)
+
+# Add the cluster assignments to the original dataframe
+df_cluster_autocracies$cluster <- kmeans_result_autocracies$cluster
+```
+
+``` r
+# Perform PCA
+pca <- prcomp(scaled_data_autocracies, center = TRUE, scale. = TRUE)
+# Extract the loadings
+loadings <- pca$rotation[, 1:2]
+# Compute the scores
+scores <- as.data.frame(pca$x[, 1:2])
+# Add the Economy and cluster information
+scores <- cbind(Economy = df_cluster_autocracies$Economy, 
+                scores, 
+                cluster = df_cluster_autocracies$cluster)
+
+
+cluster_plot_autocracies <- ggplot(scores, aes(x = PC1, y = PC2, color = factor(cluster))) + 
+  geom_point() +
+  labs(x = "PC1", y = "PC2", color = "Cluster") +
+  geom_text(aes(label = Economy), hjust = 0, vjust = 0)
+
+cluster_plot_autocracies
+```
+
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 ##### Digital repression: surveillance, harassment, and targeted violence
 

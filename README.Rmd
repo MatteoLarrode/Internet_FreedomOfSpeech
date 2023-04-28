@@ -71,6 +71,10 @@ df_reduced <- df %>%
   rename(smorg_st_protests = v2smorgtypes_2)%>%
   select(-v2smorgtypes_0, -v2smorgtypes_1, -v2smorgtypes_3, -v2smorgtypes_6, -v2smorgtypes_7, -v2smorgtypes_8)
 
+#scale all variables to 0-100
+df_transformed <- df_reduced  %>% 
+  mutate_if(is.numeric, ~ . * 100)
+
 ```
 
 #### Types of political systems
@@ -93,17 +97,16 @@ Overall, the use of the RoW data is a valid and [widely accepted approach](https
 
 ### General Findings 
 
-**Exploratory data analysis**:
+##### The data
 
-```{r eda}
-
+```{r eda, include=FALSE}
 library(tableone)
 library(kableExtra)
 
-df_renamed <- df_reduced %>%
+df_renamed <- df_transformed %>%
   rename(
     `Countries` = Economy,
-    `Internet access` = most_recent_perc,
+    `Internet access (%)` = most_recent_perc,
     `Regime classification` = v2x_regime,
     `Freedom of Expression and Alternative Sources of Information` = v2x_freexp_altinf,
     `Freedom of discussion for men` = v2cldiscm,
@@ -124,7 +127,9 @@ df_renamed <- df_reduced %>%
   
 
 tableOne <- CreateTableOne(vars = colnames(select(df_renamed, 
-                                                  -Countries, -`Regime classification`, -`Regime type`)), 
+                                                  -Countries, 
+                                                  -`Regime classification`, 
+                                                  -`Regime type`)), 
                            strata = c("Regime type"), 
                            data = df_renamed,
                            test = FALSE)
@@ -134,16 +139,19 @@ table_p <- print(tableOne, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
 
 ## Save to a CSV file
 write.csv(table_p, file = "myTable.csv")
-
 table_df <- read_csv("myTable.csv")
 colnames(table_df)[1]  <- "Variables" 
 
 
-table_df %>%
+table_html <- table_df %>%
   kbl(caption = "Table 1. Exploratory data analysis, stratified by regime type") %>%
-  kable_classic(full_width = F, html_font = "Times New Roman")%>%
-  save_kable(file = "table1.html", self_contained = T)
+  kable_classic(full_width = F, html_font = "Times New Roman")
+
+save_kable(table_html, file = "table1.html", self_contained = T)
 ```
+
+![Table1](README_files/figure-gfm/table1.png)
+##### Internet, Freedom of Expression, and Regimes
 
 For a first high-level overview, we used the "Freedom of Expression and Alternative Sources of Information index" of the VDem dataset. This variable quantifies the extent to which governments respect press and media freedom, the freedom of ordinary people to discuss political matters at home and in the public sphere, as well as the freedom of academic and cultural expression.
 
@@ -214,50 +222,18 @@ freedom_speech_internet_facet
 This faceted graph carries some very interesting information! It suggests that the effect of Internet penetration on freedom of discussion is **conditional on regime type**. In countries classified as democratic, higher access to the Internet seems to be correlated with an increase in freedom of discussion. On the other hand, countries classified as autocracies display an apparent negative relationship between Internet penetration and freedom of discussion.
 
 ```{r regression1}
-model1 <- lm(data = df_reduced,  (v2x_freexp_altinf*100) ~ (most_recent_perc*100) * regime_type)
+library(sjPlot)
 
-summary(model1)
+model1 <- lm(data = df_renamed,  `Freedom of Expression and Alternative Sources of Information` ~ `Internet access (%)` * `Regime type`)
 
-
+tab_model(model1)
 ```
 
+Table 2. Regression model, interaction effect based on regime type 
 
-```{r cluster analysis}
-# Load required package
-library(cluster)
+![Table2](README_files/figure-gfm/table2.png)
 
-df_cluster <- df_reduced%>%
-  select(-v2x_regime, -regime_type)
 
-# Select the columns to be used for clustering
-cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2cldiscm", "v2cldiscw", "v2mecenefi", "v2smgovdom", "v2smgovshutcap", "v2smgovshut", "v2smgovsmmon", "v2smgovsmcenprc", "v2smarrest", "v2smorgavgact", "v2smorgelitact", "smorg_st_protests", "smorg_particip", "smorg_violence")
-
-# Scale the data
-scaled_data <- scale(df_cluster[, cluster_cols])
-
-# Determine the optimal number of clusters (elbow method)
-wss <- sapply(1:10, function(k) {
-  kmeans(scaled_data, k, nstart = 10)$tot.withinss})
-
-plot(1:10, wss, type = "b", xlab = "Number of clusters", ylab = "Within groups sum of squares")
-
-# Run k-means clustering with the chosen number of clusters
-num_clusters <- 5
-kmeans_result <- kmeans(scaled_data, centers = num_clusters, nstart = 25)
-
-# Add the cluster assignments to the original dataframe
-df_cluster$cluster <- kmeans_result$cluster
-
-```
-
-```{r}
-cluster_plot <- ggplot(df_cluster, aes(x = most_recent_perc, y = v2x_freexp_altinf, color = factor(cluster))) + 
-  geom_point() +
-  labs(x = "Internet Access", y = "Freedom of Speech", color = "Cluster") #+
-  #geom_text(aes(label = Economy), hjust = 0, vjust = 0)
-
-cluster_plot
-```
 The purpose of this report is to delve into the complex interplay between Internet penetration, freedom of speech, and regime type. By analyzing the data and conducting case studies, this report aims to investigate the specific mechanisms that drive these observed patterns. By doing so, it aims to provide insights into the nuances of the relationship between the Internet and freedom of speech in different political contexts.
 
 ### Online activity 
@@ -266,23 +242,53 @@ The purpose of this report is to delve into the complex interplay between Intern
 ##### A Platform to Share Opinions and Speak Out in Safety...
 In democracies, social media has provided a platform for individuals to share their opinions and engage in political discussions, allowing for greater freedom of expression and a more direct connection with their representatives. The inter-connectivity and anonymity provided by the Internet can also empower groups that tend to be discriminated against to express themselves.
 
-
-VARIABLES
-  
-  Freedom of Expression and Alternative Sources of Information index (D) - (v2x_freexp_altinf)
-  Freedom of discussion for men (C) (v2cldiscm)
-  Freedom of discussion for women (C) (v2cldiscw)
+```{r}
+df_democracies <- df_renamed%>%
+  filter(`Regime type` == "Democracies")
 
 
+model_democracies_men <- lm(data = df_democracies,  `Freedom of discussion for men` ~ `Internet access (%)` + `Regime classification`)
+model_democracies_women <- lm(data = df_democracies,  `Freedom of discussion for women` ~ `Internet access (%)` + `Regime classification`)
+
+tab_model(model_democracies_men, model_democracies_women)
+
+```
+
+Table 3. Regression models, freedom of speech for women and men
+
+![Table2](README_files/figure-gfm/table3.png)
+This regression confirms that, in democracies, as access to the internet increases, freedom of discussion for both men and women increases in a statistically significant manner. Also, at the same level of internet access, liberal democracies have a higher freedom of discussion than flawed democraies. 
+
+However, the regression analysis above also shows that, holding democracy type constant, men gain more freedom of speech than women as internet access increases. 
 
 ##### ...But that also bears discrimination and breeds polarization
-At the same time, social media has also been associated with discrimination and polarization, with algorithms and echo chambers leading to the amplification of extreme viewpoints and the spread of misinformation.
+
+Social media has also been associated with discrimination and polarization, with algorithms and echo chambers leading to the amplification of extreme viewpoints and the spread of misinformation.
+
+```{r}
+t.test(df_democracies$`Freedom of discussion for men`, 
+       df_democracies$`Freedom of discussion for women`)
+
+```
 
 #### Autocracies: 
+
+
+```{r}
+df_autocracies <- df_transformed%>%
+  filter(regime_type == "Autocracies")
+
+```
 
 ##### Censorship and Disinformation
 
 At both a domestic and international level, authoritarian governments are attempting to break up the open internet and create a network of oppressive enclaves. This is resulting in an increasing number of governments controlling what individuals can access and share online, by blocking foreign websites, holding onto personal data, and centralizing their technical infrastructure. Consequently, internet freedom globally has decreased for the [12th year in a row](https://freedomhouse.org/report/freedom-net/2022/countering-authoritarian-overhaul-internet). Digital repression in many countries has increased, coinciding with wider crackdowns on human rights. Russia, Myanmar, Libya, and Sudan experienced the most significant declines in internet freedom. Governments are blocking political, social, or religious content, often targeting information sources based outside their borders, leading to record-high online censorship. In these cases, the internet becomes a tool for disinformation and propaganda, with governments using it to manipulate public opinion and suppress dissent.
+
+
+```{r}
+t.test(df_autocracies$v2smgovshutcap, df_autocracies$v2smgovshut)
+
+```
 
 
 ### Offline activity 
@@ -291,10 +297,18 @@ At both a domestic and international level, authoritarian governments are attemp
 ##### A Platform for Social Change
 Social media has been a powerful tool for social change in democracies, allowing activists to raise awareness of important issues and mobilize support for their causes.
 
+```{r}
+model_democracies_offline <- lm(data = df_democracies,  `Organization through social media for citizen participation & strikes` ~ `Internet access (%)` + `Regime classification`)
+summary(model_democracies_offline)
+
+```
+
 ##### The dangers of certain discourses
 However, certain discourses on social media can also be harmful and perpetuate hate speech and discriminatory attitudes.
 
 #### Autocracies:
+
+
 
 ```{r cluster_autocracies}
 
