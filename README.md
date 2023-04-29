@@ -1,7 +1,6 @@
-Final_Project
+Freedom of Speech in the Digital Era: Challenges and Opportunities
 ================
 Matteo Larrode
-2023-04-10
 
 ## Intro
 
@@ -92,8 +91,8 @@ our analysis.
 
 ##### The data
 
-![Table1](README_files/figure-gfm/table1.png) \##### Internet, Freedom
-of Expression, and Regimes
+![Table1](README_files/figure-gfm/table1.png) **Internet, Freedom of
+Expression, and Regimes**
 
 For a first high-level overview, we used the “Freedom of Expression and
 Alternative Sources of Information index” of the VDem dataset. This
@@ -192,7 +191,11 @@ between Internet penetration and freedom of discussion.
 
 ``` r
 library(sjPlot)
+```
 
+    ## #refugeeswelcome
+
+``` r
 model1 <- lm(data = df_renamed,  `Freedom of Expression and Alternative Sources of Information` ~ `Internet access (%)` * `Regime type`)
 
 tab_model(model1)
@@ -294,13 +297,6 @@ R<sup>2</sup> / R<sup>2</sup> adjusted
 </td>
 </tr>
 </table>
-
-Table 2. Regression model, interaction effect based on regime type
-
-<figure>
-<img src="README_files/figure-gfm/table2.png" alt="Table2" />
-<figcaption aria-hidden="true">Table2</figcaption>
-</figure>
 
 The purpose of this report is to delve into the complex interplay
 between Internet penetration, freedom of speech, and regime type. By
@@ -462,13 +458,11 @@ R<sup>2</sup> / R<sup>2</sup> adjusted
 </tr>
 </table>
 
-Table 3. Regression models, freedom of speech for women and men
-
-![Table2](README_files/figure-gfm/table3.png) This regression confirms
-that, in democracies, as access to the internet increases, freedom of
-discussion for both men and women increases in a statistically
-significant manner. Also, at the same level of internet access, liberal
-democracies have a higher freedom of discussion than flawed democraies.
+This regression confirms that, in democracies, as access to the internet
+increases, freedom of discussion for both men and women increases in a
+statistically significant manner. Also, at the same level of internet
+access, liberal democracies have a higher freedom of discussion than
+flawed democraies.
 
 However, the regression analysis above also shows that, holding
 democracy type constant, men gain more freedom of speech than women as
@@ -484,7 +478,7 @@ Table 4. Unpaired two-samples t-test comparing freedom of discussion for
 men and for women
 
 <figure>
-<img src="(README_files/figure-gfm/table4.png)" alt="Table4" />
+<img src="README_files/figure-gfm/table4.png" alt="Table4" />
 <figcaption aria-hidden="true">Table4</figcaption>
 </figure>
 
@@ -921,7 +915,7 @@ stats.table2 <- tidy(t_model2, conf.int = TRUE)
 nice_table(stats.table2, broom = "t.test")
 ```
 
-<div class="tabwid"><style>.cl-e8f63e78{table-layout:auto;}.cl-e8efb6ac{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-e8efb6b6{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-e8efb6c0{font-family:'Times New Roman';font-size:7.2pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;top:3.6pt;}.cl-e8f290a2{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-e8f2a222{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e8f2a22c{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-e8f63e78'><thead><tr style="overflow-wrap:break-word;"><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">Method</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">Alternative</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">Mean 1</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">Mean 2</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6b6">M</span><span class="cl-e8efb6c0">1</span><span class="cl-e8efb6ac"> - </span><span class="cl-e8efb6b6">M</span><span class="cl-e8efb6c0">2</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6b6">t</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6b6">df</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6b6">p</span></p></th><th class="cl-e8f2a222"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">95% CI</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">Welch Two Sample t-test</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">two.sided</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">-73.47</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">-25.57</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">-47.91</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">-2.54</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">145.44</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">.012</span></p></td><td class="cl-e8f2a22c"><p class="cl-e8f290a2"><span class="cl-e8efb6ac">[-85.17, -10.64]</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-6f4d254c{table-layout:auto;}.cl-6f43c092{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6f43c09c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6f43c0a6{font-family:'Times New Roman';font-size:7.2pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;top:3.6pt;}.cl-6f47ea50{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-6f4801c0{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6f4801ca{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-6f4d254c'><thead><tr style="overflow-wrap:break-word;"><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Method</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Alternative</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Mean 1</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Mean 2</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">M</span><span class="cl-6f43c0a6">1</span><span class="cl-6f43c092"> - </span><span class="cl-6f43c09c">M</span><span class="cl-6f43c0a6">2</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">t</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">df</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">p</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">95% CI</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">Welch Two Sample t-test</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">two.sided</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-73.47</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-25.57</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-47.91</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-2.54</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">145.44</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">.012</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">[-85.17, -10.64]</span></p></td></tr></tbody></table></div>
 
 **Key takeaway**: Autocracies tend not to leverage their Internet
 shutdown capacity to the fullest.
@@ -1015,5 +1009,5 @@ offline_activity
 
 ![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
-Resources: *- <https://www.datacamp.com/tutorial/pca-analysis-r>* *-
-<https://www.datacamp.com/tutorial/k-means-clustering-r>*
+Resources: - *<https://www.datacamp.com/tutorial/pca-analysis-r>* -
+*<https://www.datacamp.com/tutorial/k-means-clustering-r>*

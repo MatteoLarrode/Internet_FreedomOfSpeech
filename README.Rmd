@@ -1,7 +1,6 @@
 ---
-title: "Final_Project"
+title: "Freedom of Speech in the Digital Era: Challenges and Opportunities"
 author: "Matteo Larrode"
-date: "2023-04-10"
 output: github_document
 always_allow_html: true
 ---
@@ -160,7 +159,7 @@ save_kable(table_html, file = "table1.html", self_contained = T)
 ```
 
 ![Table1](README_files/figure-gfm/table1.png)
-##### Internet, Freedom of Expression, and Regimes
+**Internet, Freedom of Expression, and Regimes**
 
 For a first high-level overview, we used the "Freedom of Expression and Alternative Sources of Information index" of the VDem dataset. This variable quantifies the extent to which governments respect press and media freedom, the freedom of ordinary people to discuss political matters at home and in the public sphere, as well as the freedom of academic and cultural expression.
 
@@ -238,11 +237,6 @@ model1 <- lm(data = df_renamed,  `Freedom of Expression and Alternative Sources 
 tab_model(model1)
 ```
 
-Table 2. Regression model, interaction effect based on regime type 
-
-![Table2](README_files/figure-gfm/table2.png)
-
-
 The purpose of this report is to delve into the complex interplay between Internet penetration, freedom of speech, and regime type. By analyzing the data and conducting case studies, this report aims to investigate the specific mechanisms that drive these observed patterns. By doing so, it aims to provide insights into the nuances of the relationship between the Internet and freedom of speech in different political contexts.
 
 ### Online activity 
@@ -263,9 +257,6 @@ tab_model(model_democracies_men, model_democracies_women)
 
 ```
 
-Table 3. Regression models, freedom of speech for women and men
-
-![Table2](README_files/figure-gfm/table3.png)
 This regression confirms that, in democracies, as access to the internet increases, freedom of discussion for both men and women increases in a statistically significant manner. Also, at the same level of internet access, liberal democracies have a higher freedom of discussion than flawed democraies. 
 
 However, the regression analysis above also shows that, holding democracy type constant, men gain more freedom of speech than women as internet access increases. 
@@ -287,7 +278,7 @@ nice_table(stats.table, broom = "t.test")
 
 ```
 
-![Table4]((README_files/figure-gfm/table4.png))
+![Table4](README_files/figure-gfm/table4.png)
 
 
 ```{r dumbbell plot, dpi=200, fig.width=7, fig.height=4}
@@ -627,5 +618,5 @@ offline_activity
 
 
 Resources: 
-*- https://www.datacamp.com/tutorial/pca-analysis-r*
-*- https://www.datacamp.com/tutorial/k-means-clustering-r*
+- *https://www.datacamp.com/tutorial/pca-analysis-r*
+- *https://www.datacamp.com/tutorial/k-means-clustering-r*
