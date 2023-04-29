@@ -3,6 +3,7 @@ title: "Final_Project"
 author: "Matteo Larrode"
 date: "2023-04-10"
 output: github_document
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -356,6 +357,12 @@ summary(model_democracies_offline)
 ##### The dangers of certain discourses
 However, certain discourses on social media can also be harmful and perpetuate hate speech and discriminatory attitudes.
 
+One example of the harmful effects of social media discourse can be seen in the January 6 US Capitol attack. The event was largely organized on social media sites used by the far-right, such as Gab and Parler. These platforms allowed users to freely share extremist views and conspiracy theories, ultimately leading to the violent and destructive event.
+
+However, the negative impacts of certain discourses on social media extend beyond just the organization of events like the Capitol attack. Some individuals use social media to spread misinformation and propaganda, which can fuel prejudice and intolerance towards marginalized groups. For instance, anti-vaccine sentiment has been amplified on social media, leading to a rise in vaccine hesitancy and potentially putting public health at risk.
+
+Similarly, social media can also be a breeding ground for cyberbullying and harassment. The anonymity provided by social media can embolden individuals to engage in abusive behavior towards others. This can lead to serious emotional and psychological harm for those targeted by the harassment.
+
 #### Autocracies:
 
 Unlike democracies, autocracies vastly differ in their access to the Internet, monitoring or disinformation capacity, and strategies. It could be interesting to run a cluster analysis on them, which could enable us to group them depending on their characteristics.  
@@ -420,45 +427,121 @@ fviz_pca_var(data.pca, col.var = "black")
 ```
 Three main pieces of information can be observed from the previous plot. 
 
-- First, all the variables that are grouped together are positively correlated to each other, and that is the case for instance for white/red meat, milk, and eggs have a positive correlation to each. This result is surprising because they have the highest values in the loading matrix with respect to the first principal component.
-Then, the higher the distance between the variable and the origin, the better represented that variable is. From the biplot, eggs, milk, and white meat have higher magnitude compared to red meat, and hence are well represented compared to red meat.
-Finally, variables that are negatively correlated are displayed to the opposite sides of the biplot’s origin. 
+- First, all the variables that are grouped together are positively correlated to each other, and that is the case for instance where most government actions to limit access to the Internet are correlated with a lower freedom of expression. 
+- Then, the higher the distance between the variable and the origin, the better represented that variable is.
+- Finally, variables that are negatively correlated are displayed to the opposite sides of the biplot’s origin. 
 
+**Contribution of each variable**
+
+The goal of the third visualization is to determine how much each variable is represented in a given component. Such a quality of representation is called the Cos2 and corresponds to the square cosine, and it is computed using the fviz_cos2 function.
+
+- A low value means that the variable is not perfectly represented by that component. 
+- A high value, on the other hand, means a good representation of the variable on that component.
+
+```{r}
+fviz_cos2(data.pca, choice = "var", axes = 1:2)
+```
+From the illustration above, Internet access, freedom of expression, social media filtering capacity, and in practice are the top four variables with the highest cos2, hence contributing the most to PC1 and PC2.
+
+**Biplot combined with cos2**
+
+The last two visualization approaches: biplot and attributes importance can be combined to create a single biplot, where attributes with similar cos2 scores will have similar colors.  This is achieved by fine-tuning the fviz_pca_var function as follows:  
+
+```{r}
+fviz_pca_var(data.pca, col.var = "cos2",
+            gradient.cols = c("black", "orange", "green"),
+            repel = TRUE)
+```
+From the biplot below:
+
+- High cos2 attributes are colored in green.
+- Mid cos2 attributes have an orange color.
+- Finally, low cos2 attributes have a black color: social media shutdown in practice. 
+
+**K-means clustering**
+
+We can identify the clusters of autocracies with k-means. For getting started, let’s try performing k-means by setting 3 clusters and nstart equal to 20. This last parameter is needed to run k-means with 20 different random starting assignments and, then, R will automatically choose the best results total within-cluster sum of squares. 
 
 
 ```{r}
 # Run k-means clustering with the chosen number of clusters
 num_clusters <- 3
-kmeans_result_autocracies <- kmeans(normalized_data_autocracies, centers = num_clusters, nstart = 25)
+set.seed(123)
+
+kmeans_result_autocracies <- kmeans(normalized_data_autocracies, centers = num_clusters, nstart = 20)
 
 # Add the cluster assignments to the original dataframe
 df_cluster_autocracies$cluster <- kmeans_result_autocracies$cluster
 
+kmeans_result_autocracies
 ```
+From the output, we can observe that three different clusters have been found with sizes 19, 26 and 31.
+
+The best way to find the best model is to try different models with a different number of clusters. This procedure needs to be tracked using a graphical representation, called **scree plot**, in which the number of clusters is plotted on the x-axis, while WCSS is on the y-axis. 
+
+In this case study, we build 10 k-means models, each of these will have a different number of clusters, reaching a maximum of 10 clusters. Moreover, we are going to use only a part of the dataset. So, we include only the price and the number of reviews. To plot the scree plot, we need to save the total within-cluster sum of squares of all the models into the variable wss.
+
+```{r, dpi=200}
+# Decide how many clusters to look at
+n_clusters <- 10
+
+# Initialize total within sum of squares error: wss
+wss <- numeric(n_clusters)
+
+set.seed(123)
+
+# Look over 1 to n possible clusters
+for (i in 1:n_clusters) {
+  # Fit the model: km.out
+  km.out <- kmeans(normalized_data_autocracies, centers = i, nstart = 20)
+  # Save the within cluster sum of squares
+  wss[i] <- km.out$tot.withinss
+}
+
+# Produce a scree plot
+wss_df <- tibble(clusters = 1:n_clusters, wss = wss)
+ 
+scree_plot <- ggplot(wss_df, aes(x = clusters, y = wss, group = 1)) +
+    geom_point(size = 4)+
+    geom_line() +
+    scale_x_continuous(breaks = c(2, 4, 6, 8, 10)) +
+    xlab('Number of clusters')+
+    geom_hline(
+        yintercept = wss, 
+        linetype = 'dashed', 
+        col = c(rep('#000000',3),'#FF0000', rep('#000000', 6)))
+
+scree_plot
+
+```
+By taking a look at the scree plot, we can notice how the total within-cluster sum of squares decreases as the number of clusters grows. The criterion to choose the number of clusters is by finding an elbow such that we are able to find a point where the WCSS decreases much slower after adding another cluster. In this case, the best choice seems to be an number of clusters equal to 4. After k=4, the improvements of the models seem to reduce sharply. 
+
+Now let's run the k-means cluster analysis with 4 clusters, and see what information can be uncovered.
 
 ```{r}
-# Perform PCA
-pca <- prcomp(normalized_data_autocracies, center = TRUE, scale. = TRUE)
-# Extract the loadings
-loadings <- pca$rotation[, 1:2]
-# Compute the scores
-scores <- as.data.frame(pca$x[, 1:2])
-# Add the Economy and cluster information
-scores <- cbind(Economy = df_cluster_autocracies$Economy, 
-                scores, 
-                cluster = df_cluster_autocracies$cluster)
+# Select number of clusters
+k <- 4
+set.seed(123)
+# Build model with k clusters: km.out
+km.out <- kmeans(normalized_data_autocracies, centers = k, nstart = 20)
 
-
-cluster_plot_autocracies <- ggplot(scores, aes(x = PC1, y = PC2, color = factor(cluster))) + 
-  geom_point() +
-  labs(x = "PC1", y = "PC2", color = "Cluster") +
-  geom_text(aes(label = Economy), hjust = 0, vjust = 0)
-
-cluster_plot_autocracies
+# Add the cluster assignments to the original dataframe
+df_cluster_autocracies$cluster_id <- factor(km.out$cluster)
 ```
 
-Let us visualize the different in Internet shutdown capacity, and in practice. 
+Let us see what are the common characteristics of the countries of each cluster, and if we can uncover trends and patterns in their access to the internet and censorship strategies.
 
+
+```{r}
+
+```
+
+
+
+
+##### Digital repression: surveillance, harassment, and targeted violence
+
+Let us visualize the difference in Internet shutdown capacity, and in practice. 
 
 ```{r}
 
@@ -469,11 +552,10 @@ nice_table(stats.table2, broom = "t.test")
 
 ```
 
-**Key takeaway**: Autocracies tend not to leverage their Internet shutdown capacity (statistically significant)
+**Key takeaway**: Autocracies tend not to leverage their Internet shutdown capacity to the fullest. 
 
 Why not?
 
-##### Digital repression: surveillance, harassment, and targeted violence
 In autocracies, the internet is increasingly being used as a tool of repression. Governments are using digital means such as surveillance, social media monitoring, and targeted violence to silence dissent and suppress political opposition. Activists and human rights defenders face heightened risks both on- and offline, as governments increasingly use technology to monitor and track their activities. Harassment and cyber attacks against individuals and groups critical of the government are also on the rise. In some cases, governments are using the internet to specifically target vulnerable populations, such as ethnic and religious minorities, and subject them to online abuse and persecution. The impact of digital repression on individuals and society as a whole is significant, as it undermines freedom of expression and other basic human rights, and contributes to a culture of fear and self-censorship.
 
 ##### The Internet for social change
@@ -544,4 +626,6 @@ offline_activity
 
 
 
-
+Resources: 
+*- https://www.datacamp.com/tutorial/pca-analysis-r*
+*- https://www.datacamp.com/tutorial/k-means-clustering-r*

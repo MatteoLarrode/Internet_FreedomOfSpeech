@@ -38,3 +38,25 @@ cluster_plot
 
 
 
+
+
+
+
+# Perform PCA
+pca <- prcomp(normalized_data_autocracies, center = TRUE, scale. = TRUE)
+# Extract the loadings
+loadings <- pca$rotation[, 1:2]
+# Compute the scores
+scores <- as.data.frame(pca$x[, 1:2])
+# Add the Economy and cluster information
+scores <- cbind(Economy = df_cluster_autocracies$Economy, 
+                scores, 
+                cluster = df_cluster_autocracies$cluster)
+
+
+cluster_plot_autocracies <- ggplot(scores, aes(x = PC1, y = PC2, color = factor(cluster))) + 
+  geom_point() +
+  labs(x = "PC1", y = "PC2", color = "Cluster") +
+  geom_text(aes(label = Economy), hjust = 0, vjust = 0)
+
+cluster_plot_autocracies
