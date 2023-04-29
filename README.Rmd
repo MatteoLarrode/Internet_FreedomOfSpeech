@@ -65,10 +65,14 @@ df_reduced <- df %>%
          v2smorgtypes_6, #Vigilante Justice
          v2smorgtypes_7, #Terrorism
          v2smorgtypes_8)%>%#Ethnic cleansing/genocide
-  mutate(#recode sm. org. type --> merge categories
-         smorg_particip = round((v2smorgtypes_0 + v2smorgtypes_1 + v2smorgtypes_3)/3, 3), #citizen participation & strikes
-         smorg_violence =  round((v2smorgtypes_6 + v2smorgtypes_7 + v2smorgtypes_8)/3, 3), #violence
-         v2x_regime = as.factor(v2x_regime),
+  #recode sm. org. type --> merge categories
+  mutate(smorg_particip = round((v2smorgtypes_0 + v2smorgtypes_1 + v2smorgtypes_3)/3, 3), #citizen participation & strikes
+         smorg_violence =  round((v2smorgtypes_6 + v2smorgtypes_7 + v2smorgtypes_8)/3, 3)) %>% 
+  #variables for capacity coded in the opposite way as variables for gvt action: reverse code them
+  mutate(v2smgovfilcap = -1*v2smgovfilcap,
+         v2smgovshutcap = -1*v2smgovshutcap)%>%
+  #new variable for regimes
+  mutate(v2x_regime = as.factor(v2x_regime),
          regime_type = as.factor(ifelse(grepl("autocracy", v2x_regime), "Autocracies", "Democracies")))%>% 
   rename(smorg_st_protests = v2smorgtypes_2)%>%
   select(-v2smorgtypes_0, -v2smorgtypes_1, -v2smorgtypes_3, -v2smorgtypes_6, -v2smorgtypes_7, -v2smorgtypes_8)
@@ -369,6 +373,7 @@ cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2mecenefi", "v2smgo
 
 # Scale the data
 normalized_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+  
 ```
 
 We can now create a covariance matrix, and use a heatmap to visualize correlation between the variables. 
@@ -383,14 +388,15 @@ We can now conduct our principle components analysis. In PCA, a new set of dimen
 
 ```{r}
 library("FactoMineR")
+library("factoextra")
 
 data.pca <- princomp(corr_matrix)
 summary(data.pca)
 
 ```
-Each component explains a percentage of the total variance in the data set. In the Cumulative Proportion section, the first principal component explains almost 90% of the total variance. This implies that 9 tenths of the data in the set of 11 variables can be represented by just the first principal component. The second one explains 5% of the total variance. 
+Each component explains a percentage of the total variance in the data set. In the Cumulative Proportion section, the first principal component explains over 68% of the total variance. This implies that over 2 thirds of the data in the set of 11 variables can be represented by just the first principal component. The second one explains 20% of the total variance. 
 
-The cumulative proportion of Comp.1 and Comp.2 explains more than 95% of the total variance. This means that the first two principal components can accurately represent the data. 
+The cumulative proportion of Comp.1 and Comp.2 explains almost 89% of the total variance. This means that the first two principal components can accurately represent the data. 
 
 We can now analyze the loadings, which describe the importance of the independent variables. The loadings provide information about which variables give the largest contribution to the components.
 
@@ -403,6 +409,20 @@ We can now analyze the loadings, which describe the importance of the independen
 data.pca$loadings[, 1:2]
 ```
 
+**Biplot of the attributes**
+
+With the biplot, it is possible to visualize the similarities and dissimilarities between the samples, and further shows the impact of each attribute on each of the principal components.
+
+```{r, dpi=200}
+# Graph of the variables
+fviz_pca_var(data.pca, col.var = "black")
+
+```
+Three main pieces of information can be observed from the previous plot. 
+
+- First, all the variables that are grouped together are positively correlated to each other, and that is the case for instance for white/red meat, milk, and eggs have a positive correlation to each. This result is surprising because they have the highest values in the loading matrix with respect to the first principal component.
+Then, the higher the distance between the variable and the origin, the better represented that variable is. From the biplot, eggs, milk, and white meat have higher magnitude compared to red meat, and hence are well represented compared to red meat.
+Finally, variables that are negatively correlated are displayed to the opposite sides of the biplot’s origin. 
 
 
 
