@@ -69,8 +69,13 @@ df_reduced <- df %>%
   mutate(smorg_particip = round((v2smorgtypes_0 + v2smorgtypes_1 + v2smorgtypes_3)/3, 3), #citizen participation & strikes
          smorg_violence =  round((v2smorgtypes_6 + v2smorgtypes_7 + v2smorgtypes_8)/3, 3)) %>% 
   #variables for capacity coded in the opposite way as variables for gvt action: reverse code them
-  mutate(v2smgovfilcap = -1*v2smgovfilcap,
-         v2smgovshutcap = -1*v2smgovshutcap)%>%
+  mutate(v2mecenefi = -1*v2mecenefi,
+         v2smgovdom = -1*v2smgovdom,
+         v2smgovfilprc = -1*v2smgovfilprc,
+         v2smgovshut = -1*v2smgovshut,
+         v2smgovsmmon = -1*v2smgovsmmon,
+         v2smgovsmcenprc = -1*v2smgovsmcenprc,
+         v2smarrest = -1*v2smarrest)%>%
   #new variable for regimes
   mutate(v2x_regime = as.factor(v2x_regime),
          regime_type = as.factor(ifelse(grepl("democracy", v2x_regime), "Democracies", "Autocracies")))%>% 
@@ -584,6 +589,7 @@ Let us visualize the difference in Internet shutdown capacity, and in practice.
 ```{r}
 
 t_model2 <- t.test(df_autocracies$`Government Internet shutdown capacity`, df_autocracies$`Government Internet shut down in practice`)
+
 stats.table2 <- tidy(t_model2, conf.int = TRUE)
 
 nice_table(stats.table2, broom = "t.test")

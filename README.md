@@ -171,7 +171,7 @@ freedom_speech_internet_facet <- ggplot(df_reduced, aes(x = most_recent_perc, y 
         axis.ticks.y = element_blank())+
   scale_x_continuous(name ="Internet Penetration",labels = scales::percent_format(accuracy = 1))+
   scale_y_continuous(name = "Freedom of Expression")+
-  labs(title = "Relationship between Internet Penetration and Freedom of Discussion \n depending on the regime type",
+  labs(title = "Relationship between Internet Penetration and Freedom of Discussion \nDepending on Regime Type",
        caption="Source: ITU, V-Dem")
 
 freedom_speech_internet_facet
@@ -191,11 +191,11 @@ between Internet penetration and freedom of discussion.
 
 ``` r
 library(sjPlot)
-```
 
-    ## Learn more about sjPlot with 'browseVignettes("sjPlot")'.
+df_renamed <- df_renamed %>%
+  mutate(`Regime type` = factor(`Regime type`, levels = c("Democracies", "Autocracies")))
 
-``` r
+
 model1 <- lm(data = df_renamed,  `Freedom of Expression and Alternative Sources of Information` ~ `Internet access (%)` * `Regime type`)
 
 tab_model(model1)
@@ -229,10 +229,10 @@ p
 (Intercept)
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-58.47
+70.05
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-49.76 – 67.19
+55.66 – 84.44
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
 <strong>\<0.001</strong>
@@ -243,24 +243,24 @@ p
 Internet access (%)
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
--0.27
+0.20
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
--0.41 – -0.13
+0.02 – 0.38
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-<strong>\<0.001</strong>
+<strong>0.030</strong>
 </td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-Regime type \[Democracies\]
+Regime type \[Autocracies\]
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-11.58
+-11.58
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
--5.24 – 28.40
+-28.40 – 5.24
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
 0.176
@@ -268,13 +268,13 @@ Regime type \[Democracies\]
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">
-Internet access (%) ×<br>Regime type \[Democracies\]
+Internet access (%) ×<br>Regime type \[Autocracies\]
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.47
+-0.47
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
-0.25 – 0.70
+-0.70 – -0.25
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">
 <strong>\<0.001</strong>
@@ -557,6 +557,7 @@ support for their causes.
 
 ``` r
 model_democracies_offline <- lm(data = df_democracies,  `Organization through social media for citizen participation & strikes` ~ `Internet access (%)` + `Regime classification`)
+
 summary(model_democracies_offline)
 ```
 
@@ -629,19 +630,10 @@ cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2mecenefi", "v2smgo
 
 # Scale the data
 normalized_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+
+#set country name as row names
+rownames(normalized_data_autocracies) <- df_cluster_autocracies$Economy
 ```
-
-We can now create a covariance matrix, and use a heatmap to visualize
-correlation between the variables.
-
-``` r
-library(ggcorrplot)
-
-corr_matrix <- cor(normalized_data_autocracies)
-ggcorrplot(corr_matrix)
-```
-
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 We can now conduct our principle components analysis. In PCA, a new set
 of dimensions or latent variables are constructed based on a (linear)
@@ -656,34 +648,36 @@ library("factoextra")
     ## Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa
 
 ``` r
-data.pca <- princomp(corr_matrix)
-summary(data.pca)
+autocracies.pca <- prcomp(normalized_data_autocracies)
+summary(autocracies.pca)
 ```
 
     ## Importance of components:
-    ##                           Comp.1    Comp.2     Comp.3     Comp.4     Comp.5
-    ## Standard deviation     0.8338489 0.4537099 0.22759346 0.16262333 0.10646287
-    ## Proportion of Variance 0.6857717 0.2030306 0.05108865 0.02608378 0.01117895
-    ## Cumulative Proportion  0.6857717 0.8888023 0.93989094 0.96597472 0.97715368
-    ##                             Comp.6      Comp.7      Comp.8      Comp.9
-    ## Standard deviation     0.092002574 0.075957915 0.061085782 0.059282605
-    ## Proportion of Variance 0.008348429 0.005690506 0.003680316 0.003466246
-    ## Cumulative Proportion  0.985502105 0.991192611 0.994872927 0.998339173
-    ##                            Comp.10      Comp.11
-    ## Standard deviation     0.041035510 7.708306e-09
-    ## Proportion of Variance 0.001660827 5.860339e-17
-    ## Cumulative Proportion  1.000000000 1.000000e+00
+    ##                           PC1    PC2    PC3     PC4     PC5     PC6     PC7
+    ## Standard deviation     2.4410 1.2322 1.0667 0.78511 0.66659 0.59187 0.51667
+    ## Proportion of Variance 0.5417 0.1380 0.1034 0.05604 0.04039 0.03185 0.02427
+    ## Cumulative Proportion  0.5417 0.6797 0.7831 0.83918 0.87957 0.91142 0.93569
+    ##                            PC8     PC9    PC10    PC11
+    ## Standard deviation     0.48930 0.44890 0.37895 0.35058
+    ## Proportion of Variance 0.02176 0.01832 0.01306 0.01117
+    ## Cumulative Proportion  0.95745 0.97577 0.98883 1.00000
 
 Each component explains a percentage of the total variance in the data
 set. In the Cumulative Proportion section, the first principal component
-explains over 68% of the total variance. This implies that over 2 thirds
-of the data in the set of 11 variables can be represented by just the
-first principal component. The second one explains 20% of the total
-variance.
+explains over 54% of the total variance. This implies that over half of
+the data in the set of 11 variables can be represented by just the first
+principal component. The second one explains 13% of the total variance.
+The cumulative proportion of Comp.1 and Comp.2 explains almost 68% of
+the total variance.
 
-The cumulative proportion of Comp.1 and Comp.2 explains almost 89% of
-the total variance. This means that the first two principal components
-can accurately represent the data.
+One way to visualise the percentage of variances explained by each
+principal component is to use a scree plot:
+
+``` r
+fviz_eig(autocracies.pca)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 We can now analyze the loadings, which describe the importance of the
 independent variables. The loadings provide information about which
@@ -697,86 +691,88 @@ variables give the largest contribution to the components.
   component are positively or negatively correlated.
 
 ``` r
-data.pca$loadings[, 1:2]
+print(autocracies.pca$rotation[,1:2])
 ```
 
-    ##                        Comp.1      Comp.2
-    ## most_recent_perc   0.37623012  0.32065342
-    ## v2x_freexp_altinf -0.39005526  0.18899508
-    ## v2mecenefi        -0.33504300  0.17702822
-    ## v2smgovdom        -0.20144290  0.31893528
-    ## v2smgovfilcap     -0.25974323 -0.55878461
-    ## v2smgovfilprc     -0.36958206  0.03321707
-    ## v2smgovshutcap    -0.03342861 -0.58378324
-    ## v2smgovshut       -0.18858628  0.18838085
-    ## v2smgovsmmon      -0.33916418 -0.09178591
-    ## v2smgovsmcenprc   -0.34005071  0.07902336
-    ## v2smarrest        -0.28647549  0.15524289
+    ##                           PC1          PC2
+    ## most_recent_perc   0.09824118  0.440897364
+    ## v2x_freexp_altinf -0.33558086  0.125460698
+    ## v2mecenefi         0.36131327 -0.155507929
+    ## v2smgovdom         0.24597384 -0.298700057
+    ## v2smgovfilcap      0.25197720  0.567055891
+    ## v2smgovfilprc      0.37501725 -0.003821425
+    ## v2smgovshutcap     0.15968313  0.519998666
+    ## v2smgovshut        0.29855437 -0.214294549
+    ## v2smgovsmmon       0.35374223  0.112548444
+    ## v2smgovsmcenprc    0.35096775 -0.056129423
+    ## v2smarrest         0.34584385 -0.150861760
 
 **Biplot of the attributes**
 
 With the biplot, it is possible to visualize the similarities and
 dissimilarities between the samples, and further shows the impact of
-each attribute on each of the principal components.
+each attribute on each of the principal components. Positive correlated
+variables point to the same side of the plot. Negative correlated
+variables point to opposite sides of the graph.
 
 ``` r
 # Graph of the variables
-fviz_pca_var(data.pca, col.var = "black")
+fviz_pca_var(autocracies.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)     # Avoid text overlapping
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> Three main
-pieces of information can be observed from the previous plot.
-
-- First, all the variables that are grouped together are positively
-  correlated to each other, and that is the case for instance where most
-  government actions to limit access to the Internet are correlated with
-  a lower freedom of expression.
-- Then, the higher the distance between the variable and the origin, the
-  better represented that variable is.
-- Finally, variables that are negatively correlated are displayed to the
-  opposite sides of the biplot’s origin.
-
-**Contribution of each variable**
-
-The goal of the third visualization is to determine how much each
-variable is represented in a given component. Such a quality of
-representation is called the Cos2 and corresponds to the square cosine,
-and it is computed using the fviz_cos2 function.
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> All the
+variables that are grouped together are positively correlated to each
+other, and that is the case for instance where most government actions
+to limit access to the Internet are correlated with a lower freedom of
+expression. Also, the goal of this visualization is to determine how
+much each variable is represented in a given component. Such a quality
+of representation is called the Cos2 and corresponds to the square
+cosine.
 
 - A low value means that the variable is not perfectly represented by
   that component.
 - A high value, on the other hand, means a good representation of the
   variable on that component.
 
+**Graph of the countries**: countries with a similar profile are grouped
+together.
+
 ``` r
-fviz_cos2(data.pca, choice = "var", axes = 1:2)
+fviz_pca_ind(autocracies.pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)     # Avoid text overlapping
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> From the
-illustration above, Internet access, freedom of expression, social media
-filtering capacity, and in practice are the top four variables with the
-highest cos2, hence contributing the most to PC1 and PC2.
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-**Biplot combined with cos2**
-
-The last two visualization approaches: biplot and attributes importance
-can be combined to create a single biplot, where attributes with similar
-cos2 scores will have similar colors. This is achieved by fine-tuning
-the fviz_pca_var function as follows:
+**Contribution of each variable**
 
 ``` r
-fviz_pca_var(data.pca, col.var = "cos2",
-            gradient.cols = c("black", "orange", "green"),
-            repel = TRUE)
+fviz_cos2(autocracies.pca, 
+          choice = "var", 
+          axes = 1:2)
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> From the
-biplot below:
+illustration above, social media filtering capacity, and in practice,
+Internet censorship effort, and social media filtering are the top four
+variables with the highest cos2, hence contributing the most to PC1 and
+PC2.
 
-- High cos2 attributes are colored in green.
-- Mid cos2 attributes have an orange color.
-- Finally, low cos2 attributes have a black color: social media shutdown
-  in practice.
+**Biplot of countries and variables**
+
+``` r
+fviz_pca_biplot(autocracies.pca, 
+                repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969")  # Individuals color
+```
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 **K-means clustering**
 
@@ -803,21 +799,95 @@ kmeans_result_autocracies
     ## 
     ## Cluster means:
     ##   most_recent_perc v2x_freexp_altinf v2mecenefi v2smgovdom v2smgovfilcap
-    ## 1       -0.1380753         0.8699971  1.1483939  0.6613585   0.916975959
-    ## 2        0.4852483        -1.0656933 -0.9382701 -0.7481767  -0.665970300
-    ## 3       -0.3223557         0.3605832  0.0830819  0.2221543  -0.003461788
+    ## 1       -0.1380753         0.8699971 -1.1483939 -0.6613585  -0.916975959
+    ## 2        0.4852483        -1.0656933  0.9382701  0.7481767   0.665970300
+    ## 3       -0.3223557         0.3605832 -0.0830819 -0.2221543   0.003461788
     ##   v2smgovfilprc v2smgovshutcap v2smgovshut v2smgovsmmon v2smgovsmcenprc
-    ## 1    1.18517507      0.7857531  1.10891096    1.0516691      1.22620429
-    ## 2   -0.98072470     -0.3536690 -0.69243737   -0.9924404     -0.83817565
-    ## 3    0.09614567     -0.1849650 -0.09890118    0.1877980     -0.04855854
+    ## 1   -1.18517507     -0.7857531 -1.10891096   -1.0516691     -1.22620429
+    ## 2    0.98072470      0.3536690  0.69243737    0.9924404      0.83817565
+    ## 3   -0.09614567      0.1849650  0.09890118   -0.1877980      0.04855854
     ##    v2smarrest
-    ## 1  1.24081677
-    ## 2 -0.82220417
-    ## 3 -0.07091001
+    ## 1 -1.24081677
+    ## 2  0.82220417
+    ## 3  0.07091001
     ## 
     ## Clustering vector:
-    ##  [1] 3 1 2 1 2 2 2 2 1 3 2 3 1 3 2 3 2 3 3 3 2 1 2 2 2 3 1 3 1 3 1 1 3 1 3 2 3 3
-    ## [39] 2 1 3 1 3 3 1 1 3 3 3 1 2 2 1 2 3 1 1 2 2 3 2 1 3 2 3 2 3 3 3 2 3 2 2 2 3 3
+    ##                      Afghanistan                          Albania 
+    ##                                3                                1 
+    ##                          Algeria                           Angola 
+    ##                                2                                1 
+    ##                       Azerbaijan                          Bahrain 
+    ##                                2                                2 
+    ##                       Bangladesh                          Belarus 
+    ##                                2                                2 
+    ##                            Benin                          Burundi 
+    ##                                1                                3 
+    ##                         Cambodia                         Cameroon 
+    ##                                2                                3 
+    ##         Central African Republic                             Chad 
+    ##                                1                                3 
+    ##                            China                          Comoros 
+    ##                                2                                3 
+    ##                             Cuba                      Ivory Coast 
+    ##                                2                                3 
+    ## Democratic Republic of the Congo                         Djibouti 
+    ##                                3                                3 
+    ##                            Egypt                      El Salvador 
+    ##                                2                                1 
+    ##                Equatorial Guinea                          Eritrea 
+    ##                                2                                2 
+    ##                         Eswatini                         Ethiopia 
+    ##                                2                                3 
+    ##                             Fiji                            Gabon 
+    ##                                1                                3 
+    ##                        Guatemala                           Guinea 
+    ##                                1                                3 
+    ##                            Haiti                         Honduras 
+    ##                                1                                1 
+    ##                        Hong Kong                          Hungary 
+    ##                                3                                1 
+    ##                            India                             Iran 
+    ##                                3                                2 
+    ##                             Iraq                           Jordan 
+    ##                                3                                3 
+    ##                       Kazakhstan                            Kenya 
+    ##                                2                                1 
+    ##                           Kuwait                       Kyrgyzstan 
+    ##                                3                                1 
+    ##                             Laos                          Lebanon 
+    ##                                3                                3 
+    ##                       Madagascar                         Malaysia 
+    ##                                1                                1 
+    ##                             Mali                       Mauritania 
+    ##                                3                                3 
+    ##                          Morocco                       Mozambique 
+    ##                                3                                1 
+    ##                    Burma/Myanmar                        Nicaragua 
+    ##                                2                                2 
+    ##                          Nigeria                             Oman 
+    ##                                1                                2 
+    ##                         Pakistan                 Papua New Guinea 
+    ##                                3                                1 
+    ##                      Philippines                            Qatar 
+    ##                                1                                2 
+    ##                           Russia                           Rwanda 
+    ##                                2                                3 
+    ##                     Saudi Arabia                           Serbia 
+    ##                                2                                1 
+    ##                        Singapore                      South Sudan 
+    ##                                3                                2 
+    ##                            Sudan                            Syria 
+    ##                                3                                2 
+    ##                         Tanzania                         Thailand 
+    ##                                3                                3 
+    ##                             Togo                           Turkey 
+    ##                                3                                2 
+    ##                           Uganda             United Arab Emirates 
+    ##                                3                                2 
+    ##                       Uzbekistan                          Vietnam 
+    ##                                2                                2 
+    ##                           Zambia                         Zimbabwe 
+    ##                                3                                3 
     ## 
     ## Within cluster sum of squares by cluster:
     ## [1] 101.9928 133.7588 185.7730
@@ -876,7 +946,7 @@ scree_plot <- ggplot(wss_df, aes(x = clusters, y = wss, group = 1)) +
 scree_plot
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> By taking a
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> By taking a
 look at the scree plot, we can notice how the total within-cluster sum
 of squares decreases as the number of clusters grows. The criterion to
 choose the number of clusters is by finding an elbow such that we are
@@ -917,11 +987,11 @@ for (var in variables) {
 }
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-14-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-14-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-14-4.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-4.png)<!-- -->
 
 ``` r
-# Select the variables you want to plot
-vars_to_plot <- c("most_recent_perc", "v2x_freexp_altinf", "v2smgovfilcap", "v2smgovfilprc")
+# Select the variables plotted
+vars_to_plot <- c("most_recent_perc", "v2x_freexp_altinf", "v2smgovfilcap", "v2smgovsmmon", "v2smarrest")
 
 # Create a subset of the original dataframe with only the variables to plot and the cluster information
 df_subset <- df_cluster_autocracies[, c(vars_to_plot, "cluster_id", "Economy")]
@@ -939,7 +1009,18 @@ for(i in 1:(length(vars_to_plot)-1)){
 }
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-6.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-6.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-7.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-8.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-9.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-16-10.png)<!-- -->
+
+``` r
+final_plot <- ggplot(df_subset, aes(x = v2x_freexp_altinf, y = v2smgovfilcap, color = factor(cluster_id)))+
+  geom_point(aes(size  = most_recent_perc)) +
+  geom_text(aes(label = Economy), hjust = 0, vjust = 0)+
+  scale_size(range = c(1,10), name="index")
+  
+final_plot
+```
+
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ##### Digital repression: surveillance, harassment, and targeted violence
 
@@ -948,12 +1029,13 @@ practice.
 
 ``` r
 t_model2 <- t.test(df_autocracies$`Government Internet shutdown capacity`, df_autocracies$`Government Internet shut down in practice`)
+
 stats.table2 <- tidy(t_model2, conf.int = TRUE)
 
 nice_table(stats.table2, broom = "t.test")
 ```
 
-<div class="tabwid"><style>.cl-d7085488{table-layout:auto;}.cl-d6fd0560{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-d6fd056a{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-d6fd0574{font-family:'Times New Roman';font-size:7.2pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;top:3.6pt;}.cl-d7012d20{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-d7014850{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d701485a{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-d7085488'><thead><tr style="overflow-wrap:break-word;"><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Method</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Alternative</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Mean 1</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Mean 2</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">M</span><span class="cl-d6fd0574">1</span><span class="cl-d6fd0560"> - </span><span class="cl-d6fd056a">M</span><span class="cl-d6fd0574">2</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">t</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">df</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">p</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">95% CI</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">Welch Two Sample t-test</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">two.sided</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-73.47</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-25.57</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-47.91</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-2.54</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">145.44</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">.012</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">[-85.17, -10.64]</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-e518de16{table-layout:auto;}.cl-e50f5972{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-e50f5986{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-e50f5987{font-family:'Times New Roman';font-size:7.2pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;top:3.6pt;}.cl-e5137a48{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-e513947e{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-e5139488{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-e518de16'><thead><tr style="overflow-wrap:break-word;"><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5972">Method</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5972">Alternative</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5972">Mean 1</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5972">Mean 2</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5986">M</span><span class="cl-e50f5987">1</span><span class="cl-e50f5972"> - </span><span class="cl-e50f5986">M</span><span class="cl-e50f5987">2</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5986">t</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5986">df</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5986">p</span></p></th><th class="cl-e513947e"><p class="cl-e5137a48"><span class="cl-e50f5972">95% CI</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">Welch Two Sample t-test</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">two.sided</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">73.47</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">25.57</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">47.91</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">2.54</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">145.44</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">.012</span></p></td><td class="cl-e5139488"><p class="cl-e5137a48"><span class="cl-e50f5972">[10.64, 85.17]</span></p></td></tr></tbody></table></div>
 
 **Key takeaway**: Autocracies tend not to leverage their Internet
 shutdown capacity to the fullest.
@@ -1045,7 +1127,7 @@ offline_activity <- ggplot(df_offline_long, aes(x = v2x_regime, y = value, fill 
 offline_activity
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Resources: - *<https://www.datacamp.com/tutorial/pca-analysis-r>* -
 *<https://www.datacamp.com/tutorial/k-means-clustering-r>*
