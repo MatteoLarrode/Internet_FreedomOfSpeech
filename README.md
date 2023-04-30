@@ -193,7 +193,7 @@ between Internet penetration and freedom of discussion.
 library(sjPlot)
 ```
 
-    ## #refugeeswelcome
+    ## Learn more about sjPlot with 'browseVignettes("sjPlot")'.
 
 ``` r
 model1 <- lm(data = df_renamed,  `Freedom of Expression and Alternative Sources of Information` ~ `Internet access (%)` * `Regime type`)
@@ -895,13 +895,51 @@ set.seed(123)
 # Build model with k clusters: km.out
 km.out <- kmeans(normalized_data_autocracies, centers = k, nstart = 20)
 
-# Add the cluster assignments to the original dataframe
+# Add the cluster assignments + name to the original dataframe
 df_cluster_autocracies$cluster_id <- factor(km.out$cluster)
 ```
 
 Let us see what are the common characteristics of the countries of each
 cluster, and if we can uncover trends and patterns in their access to
 the internet and censorship strategies.
+
+``` r
+# Create a list of the variables you want to visualize
+variables <- c("most_recent_perc", "v2x_freexp_altinf", "v2smgovfilcap", "v2smgovfilprc")
+
+# Create a boxplot for each variable, colored by cluster
+for (var in variables) {
+  p <- ggplot(df_cluster_autocracies, aes(x = cluster_id, y = .data[[var]], fill = factor(cluster_id))) +
+    geom_boxplot() +
+    labs(x = "Cluster ID", y = var, fill = "Cluster") +
+    theme_minimal()
+  print(p)
+}
+```
+
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-14-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-14-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-14-4.png)<!-- -->
+
+``` r
+# Select the variables you want to plot
+vars_to_plot <- c("most_recent_perc", "v2x_freexp_altinf", "v2smgovfilcap", "v2smgovfilprc")
+
+# Create a subset of the original dataframe with only the variables to plot and the cluster information
+df_subset <- df_cluster_autocracies[, c(vars_to_plot, "cluster_id", "Economy")]
+
+# Create a scatter plot for each pair of variables, colored by cluster
+for(i in 1:(length(vars_to_plot)-1)){
+  for(j in (i+1):length(vars_to_plot)){
+    # "!!sym()" function is used to convert the variable names from strings to symbols.
+    p <- ggplot(df_subset, aes(x = !!sym(vars_to_plot[i]), y = !!sym(vars_to_plot[j]), color = factor(cluster_id))) + 
+      geom_point() +
+      geom_text(aes(label = Economy), hjust = 0, vjust = 0)+
+      labs(x = vars_to_plot[i], y = vars_to_plot[j])
+    print(p)
+  }
+}
+```
+
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-2.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-3.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-4.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-5.png)<!-- -->![](README_files/figure-gfm/unnamed-chunk-15-6.png)<!-- -->
 
 ##### Digital repression: surveillance, harassment, and targeted violence
 
@@ -915,7 +953,7 @@ stats.table2 <- tidy(t_model2, conf.int = TRUE)
 nice_table(stats.table2, broom = "t.test")
 ```
 
-<div class="tabwid"><style>.cl-6f4d254c{table-layout:auto;}.cl-6f43c092{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6f43c09c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6f43c0a6{font-family:'Times New Roman';font-size:7.2pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;top:3.6pt;}.cl-6f47ea50{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-6f4801c0{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6f4801ca{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-6f4d254c'><thead><tr style="overflow-wrap:break-word;"><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Method</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Alternative</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Mean 1</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">Mean 2</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">M</span><span class="cl-6f43c0a6">1</span><span class="cl-6f43c092"> - </span><span class="cl-6f43c09c">M</span><span class="cl-6f43c0a6">2</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">t</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">df</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c09c">p</span></p></th><th class="cl-6f4801c0"><p class="cl-6f47ea50"><span class="cl-6f43c092">95% CI</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">Welch Two Sample t-test</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">two.sided</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-73.47</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-25.57</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-47.91</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">-2.54</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">145.44</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">.012</span></p></td><td class="cl-6f4801ca"><p class="cl-6f47ea50"><span class="cl-6f43c092">[-85.17, -10.64]</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-d7085488{table-layout:auto;}.cl-d6fd0560{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-d6fd056a{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-d6fd0574{font-family:'Times New Roman';font-size:7.2pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;position: relative;top:3.6pt;}.cl-d7012d20{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 2;background-color:transparent;}.cl-d7014850{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0.5pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-d701485a{background-color:transparent;vertical-align: middle;border-bottom: 0.5pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-d7085488'><thead><tr style="overflow-wrap:break-word;"><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Method</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Alternative</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Mean 1</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">Mean 2</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">M</span><span class="cl-d6fd0574">1</span><span class="cl-d6fd0560"> - </span><span class="cl-d6fd056a">M</span><span class="cl-d6fd0574">2</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">t</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">df</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd056a">p</span></p></th><th class="cl-d7014850"><p class="cl-d7012d20"><span class="cl-d6fd0560">95% CI</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">Welch Two Sample t-test</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">two.sided</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-73.47</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-25.57</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-47.91</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">-2.54</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">145.44</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">.012</span></p></td><td class="cl-d701485a"><p class="cl-d7012d20"><span class="cl-d6fd0560">[-85.17, -10.64]</span></p></td></tr></tbody></table></div>
 
 **Key takeaway**: Autocracies tend not to leverage their Internet
 shutdown capacity to the fullest.
@@ -1007,7 +1045,7 @@ offline_activity <- ggplot(df_offline_long, aes(x = v2x_regime, y = value, fill 
 offline_activity
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 Resources: - *<https://www.datacamp.com/tutorial/pca-analysis-r>* -
 *<https://www.datacamp.com/tutorial/k-means-clustering-r>*

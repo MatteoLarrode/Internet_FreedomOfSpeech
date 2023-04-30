@@ -73,7 +73,7 @@ df_reduced <- df %>%
          v2smgovshutcap = -1*v2smgovshutcap)%>%
   #new variable for regimes
   mutate(v2x_regime = as.factor(v2x_regime),
-         regime_type = as.factor(ifelse(grepl("autocracy", v2x_regime), "Autocracies", "Democracies")))%>% 
+         regime_type = as.factor(ifelse(grepl("democracy", v2x_regime), "Democracies", "Autocracies")))%>% 
   rename(smorg_st_protests = v2smorgtypes_2)%>%
   select(-v2smorgtypes_0, -v2smorgtypes_1, -v2smorgtypes_3, -v2smorgtypes_6, -v2smorgtypes_7, -v2smorgtypes_8)
 
@@ -221,7 +221,7 @@ freedom_speech_internet_facet <- ggplot(df_reduced, aes(x = most_recent_perc, y 
         axis.ticks.y = element_blank())+
   scale_x_continuous(name ="Internet Penetration",labels = scales::percent_format(accuracy = 1))+
   scale_y_continuous(name = "Freedom of Expression")+
-  labs(title = "Relationship between Internet Penetration and Freedom of Discussion \n depending on the regime type",
+  labs(title = "Relationship between Internet Penetration and Freedom of Discussion \nDepending on Regime Type",
        caption="Source: ITU, V-Dem")
 
 freedom_speech_internet_facet
@@ -231,6 +231,10 @@ This faceted graph carries some very interesting information! It suggests that t
 
 ```{r regression1}
 library(sjPlot)
+
+df_renamed <- df_renamed %>%
+  mutate(`Regime type` = factor(`Regime type`, levels = c("Democracies", "Autocracies")))
+
 
 model1 <- lm(data = df_renamed,  `Freedom of Expression and Alternative Sources of Information` ~ `Internet access (%)` * `Regime type`)
 
@@ -341,8 +345,8 @@ Social media has been a powerful tool for social change in democracies, allowing
 
 ```{r}
 model_democracies_offline <- lm(data = df_democracies,  `Organization through social media for citizen participation & strikes` ~ `Internet access (%)` + `Regime classification`)
-summary(model_democracies_offline)
 
+summary(model_democracies_offline)
 ```
 
 ##### The dangers of certain discourses
@@ -371,15 +375,10 @@ cluster_cols <- c("most_recent_perc", "v2x_freexp_altinf", "v2mecenefi", "v2smgo
 
 # Scale the data
 normalized_data_autocracies <- scale(df_cluster_autocracies[, cluster_cols])
+
+#set country name as row names
+rownames(normalized_data_autocracies) <- df_cluster_autocracies$Economy
   
-```
-
-We can now create a covariance matrix, and use a heatmap to visualize correlation between the variables. 
-```{r}
-library(ggcorrplot)
-
-corr_matrix <- cor(normalized_data_autocracies)
-ggcorrplot(corr_matrix)
 ```
 
 We can now conduct our principle components analysis. In PCA, a new set of dimensions or latent variables are constructed based on a (linear) combination of the original features; this is a process called **feature extraction**. 
@@ -388,13 +387,16 @@ We can now conduct our principle components analysis. In PCA, a new set of dimen
 library("FactoMineR")
 library("factoextra")
 
-data.pca <- princomp(corr_matrix)
-summary(data.pca)
-
+autocracies.pca <- prcomp(normalized_data_autocracies)
+summary(autocracies.pca)
 ```
-Each component explains a percentage of the total variance in the data set. In the Cumulative Proportion section, the first principal component explains over 68% of the total variance. This implies that over 2 thirds of the data in the set of 11 variables can be represented by just the first principal component. The second one explains 20% of the total variance. 
+Each component explains a percentage of the total variance in the data set. In the Cumulative Proportion section, the first principal component explains over 54% of the total variance. This implies that over half of the data in the set of 11 variables can be represented by just the first principal component. The second one explains 13% of the total variance. The cumulative proportion of Comp.1 and Comp.2 explains almost 68% of the total variance.
 
-The cumulative proportion of Comp.1 and Comp.2 explains almost 89% of the total variance. This means that the first two principal components can accurately represent the data. 
+One way to visualise the percentage of variances explained by each principal component is to use a scree plot:
+
+```{r}
+fviz_eig(autocracies.pca)
+```
 
 We can now analyze the loadings, which describe the importance of the independent variables. The loadings provide information about which variables give the largest contribution to the components.
 
@@ -404,50 +406,53 @@ We can now analyze the loadings, which describe the importance of the independen
 
 
 ```{r}
-data.pca$loadings[, 1:2]
+print(autocracies.pca$rotation[,1:2])
 ```
 
 **Biplot of the attributes**
 
-With the biplot, it is possible to visualize the similarities and dissimilarities between the samples, and further shows the impact of each attribute on each of the principal components.
+With the biplot, it is possible to visualize the similarities and dissimilarities between the samples, and further shows the impact of each attribute on each of the principal components. Positive correlated variables point to the same side of the plot. Negative correlated variables point to opposite sides of the graph.
 
 ```{r, dpi=200}
 # Graph of the variables
-fviz_pca_var(data.pca, col.var = "black")
-
+fviz_pca_var(autocracies.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)     # Avoid text overlapping
 ```
-Three main pieces of information can be observed from the previous plot. 
-
-- First, all the variables that are grouped together are positively correlated to each other, and that is the case for instance where most government actions to limit access to the Internet are correlated with a lower freedom of expression. 
-- Then, the higher the distance between the variable and the origin, the better represented that variable is.
-- Finally, variables that are negatively correlated are displayed to the opposite sides of the biplot’s origin. 
-
-**Contribution of each variable**
-
-The goal of the third visualization is to determine how much each variable is represented in a given component. Such a quality of representation is called the Cos2 and corresponds to the square cosine, and it is computed using the fviz_cos2 function.
+All the variables that are grouped together are positively correlated to each other, and that is the case for instance where most government actions to limit access to the Internet are correlated with a lower freedom of expression. Also, the goal of this  visualization is to determine how much each variable is represented in a given component. Such a quality of representation is called the Cos2 and corresponds to the square cosine. 
 
 - A low value means that the variable is not perfectly represented by that component. 
 - A high value, on the other hand, means a good representation of the variable on that component.
 
-```{r}
-fviz_cos2(data.pca, choice = "var", axes = 1:2)
-```
-From the illustration above, Internet access, freedom of expression, social media filtering capacity, and in practice are the top four variables with the highest cos2, hence contributing the most to PC1 and PC2.
-
-**Biplot combined with cos2**
-
-The last two visualization approaches: biplot and attributes importance can be combined to create a single biplot, where attributes with similar cos2 scores will have similar colors.  This is achieved by fine-tuning the fviz_pca_var function as follows:  
+**Graph of the countries**:  countries with a similar profile are grouped together.
 
 ```{r}
-fviz_pca_var(data.pca, col.var = "cos2",
-            gradient.cols = c("black", "orange", "green"),
-            repel = TRUE)
+fviz_pca_ind(autocracies.pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)     # Avoid text overlapping
 ```
-From the biplot below:
 
-- High cos2 attributes are colored in green.
-- Mid cos2 attributes have an orange color.
-- Finally, low cos2 attributes have a black color: social media shutdown in practice. 
+**Contribution of each variable**
+
+```{r}
+fviz_cos2(autocracies.pca, 
+          choice = "var", 
+          axes = 1:2)
+```
+From the illustration above, social media filtering capacity, and in practice, Internet censorship effort, and social media filtering are the top four variables with the highest cos2, hence contributing the most to PC1 and PC2.
+
+**Biplot of countries and variables**
+
+```{r}
+fviz_pca_biplot(autocracies.pca, 
+                repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969")  # Individuals color
+
+```
+
 
 **K-means clustering**
 
@@ -516,18 +521,60 @@ set.seed(123)
 # Build model with k clusters: km.out
 km.out <- kmeans(normalized_data_autocracies, centers = k, nstart = 20)
 
-# Add the cluster assignments to the original dataframe
+# Add the cluster assignments + name to the original dataframe
 df_cluster_autocracies$cluster_id <- factor(km.out$cluster)
 ```
+
 
 Let us see what are the common characteristics of the countries of each cluster, and if we can uncover trends and patterns in their access to the internet and censorship strategies.
 
 
 ```{r}
+# Create a list of the variables you want to visualize
+variables <- c("most_recent_perc", "v2x_freexp_altinf", "v2smgovfilcap", "v2smgovfilprc")
 
+# Create a boxplot for each variable, colored by cluster
+for (var in variables) {
+  p <- ggplot(df_cluster_autocracies, aes(x = cluster_id, y = .data[[var]], fill = factor(cluster_id))) +
+    geom_boxplot() +
+    labs(x = "Cluster ID", y = var, fill = "Cluster") +
+    theme_minimal()
+  print(p)
+}
 ```
 
 
+
+```{r}
+# Select the variables plotted
+vars_to_plot <- c("most_recent_perc", "v2x_freexp_altinf", "v2smgovfilcap", "v2smgovsmmon", "v2smarrest")
+
+# Create a subset of the original dataframe with only the variables to plot and the cluster information
+df_subset <- df_cluster_autocracies[, c(vars_to_plot, "cluster_id", "Economy")]
+
+# Create a scatter plot for each pair of variables, colored by cluster
+for(i in 1:(length(vars_to_plot)-1)){
+  for(j in (i+1):length(vars_to_plot)){
+    # "!!sym()" function is used to convert the variable names from strings to symbols.
+    p <- ggplot(df_subset, aes(x = !!sym(vars_to_plot[i]), y = !!sym(vars_to_plot[j]), color = factor(cluster_id))) + 
+      geom_point() +
+      geom_text(aes(label = Economy), hjust = 0, vjust = 0)+
+      labs(x = vars_to_plot[i], y = vars_to_plot[j])
+    print(p)
+  }
+}
+```
+
+
+```{r}
+final_plot <- ggplot(df_subset, aes(x = v2x_freexp_altinf, y = v2smgovfilcap, color = factor(cluster_id)))+
+  geom_point(aes(size  = most_recent_perc)) +
+  geom_text(aes(label = Economy), hjust = 0, vjust = 0)+
+  scale_size(range = c(1,10), name="index")
+  
+final_plot
+  
+```
 
 
 ##### Digital repression: surveillance, harassment, and targeted violence
