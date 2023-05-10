@@ -19,13 +19,13 @@ Through a combination of data analysis and case studies, this report seeks to fu
 
 ## Dataset & Methodology
 
-For this research project, a dataset on internet penetration, V-Dem indicators, and the political environment of the internet and social media was compiled for 179 countries.
+For this research project, a dataset covering 166 states was compiled. 
 
-- **Internet penetration**: The [International Telecommunication Union (ITU)](https://www.itu.int/en/Pages/default.aspx) is the UN specialized agency for information and communications technologies (ICT), and the official source for global ICT [statistics](https://www.itu.int/en/ITU-D/Statistics/Pages/stat/default.aspx). These statistics include the percentage of the population having access to the internet, broken down by gender and urban/rural area, at country level. 
+Its first variable is internet access, which corresponds to the percentage of the population having access to the Internet. This data was gathered from the [International Telecommunication Union (ITU)](https://www.itu.int/en/Pages/default.aspx), which is the UN specialized agency for information and communications technologies, and the official source for global ICT statistics.
 
-- **Measure of democracy**: The [Varieties of Democracy Dataset, version 13](https://www.v-dem.net/data/the-v-dem-dataset/) measures democracy and many of its indicators in the set of countries studied. It also includes the Regimes of the World (RoW) variable that was used to classify regime types for this project. 
+Data on the political environment of the internet and social media, and more general indicators for freedom of discussion, was collected from the [Varieties of Democracy Dataset, version 13](https://www.v-dem.net/data/the-v-dem-dataset/). V-Dem indicators are measured using surveys conducted by experts both in and out of the country of interest. The responses are measured on an ordinal scale, and the assessments of all the experts are aggregated using a special measurement model, and the variable is converted to a continuous variable.
 
-- **Political environment of the internet and social media**: Through expert-coded surveys, the Digital Society Survey, designed by the [Digital Society Project](http://digitalsocietyproject.org), provides information on topics related to coordinated information operations, digital media freedom, online media polarization, social cleavages as well as state internet regulation capacity and approach. 
+Finally,  V-Dem’s Regimes of the World (RoW) variable, created in a similar way as the other indicators with an aggregation of surveys by experts, was used for the classification of regime types into “Democracies” and “Autocracies".
 
 ```{r loading, include=FALSE}
 library(tidyverse)
